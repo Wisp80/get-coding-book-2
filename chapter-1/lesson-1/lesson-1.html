@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Крестики-нолики</title>
+
+    <style>
+        .row div {
+            padding: 10px;
+            border: 1px solid black;
+            height: 30px;
+            width: 30px;
+            float: left;
+        }
+
+        .row {
+            clear: both;
+        }
+    </style>
+</head>
+
+<body>
+    Щелкни, чтобы сыграть в крестики-нолики.<br/>
+    <div>
+        <div class="row">
+            <div onclick="place(this)"></div>
+            <div onclick="place(this)"></div>
+            <div onclick="place(this)"></div>
+        </div>
+        <div class="row">
+            <div onclick="place(this)"></div>
+            <div onclick="place(this)"></div>
+            <div onclick="place(this)"></div>
+        </div>
+        <div class="row">
+            <div onclick="place(this)"></div>
+            <div onclick="place(this)"></div>
+            <div onclick="place(this)"></div>
+        </div>
+    </div>
+
+    <script>
+        var currentPlayer = "0";
+
+        function place(box) {
+            box.innerText = currentPlayer;
+
+            if (currentPlayer == "0") {
+                currentPlayer = "X";
+            }
+            else {
+                currentPlayer = "0";
+            }
+        }
+    </script>
+</body>
+
+<footer></footer>
+
+</html>
