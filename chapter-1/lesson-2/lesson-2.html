@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Крестики-нолики</title>
+
+    <style>
+        body {
+            background: url(./src/background/background2.jpg) no-repeat center center fixed;
+            background-size: cover;
+            text-align: center;
+        }
+
+        .game {
+            display: inline-block;
+        }
+
+        .row div {
+            padding: 10px;
+            border: 1px solid white;
+            height: 60px;
+            width: 60px;
+            float: left;
+            background-color: rgb(42, 53, 77);
+        }
+
+        .row {
+            clear: both;
+        }
+
+        .new-image {
+            height: 60px;
+            width: 60px;
+        }
+
+        .reset-button {
+            background-color: rgb(42, 53, 77);
+            margin-top: 4px;
+            color: rgb(233, 194, 135);
+            height: 30px;
+            width: 80px;
+        }
+
+        .change-theme-button {
+            background-color: rgb(42, 53, 77);
+            color: rgb(233, 194, 135);
+            height: 30px;
+            width: 80px;
+            margin-top: 10px;
+        }
+
+        .current-player-board {
+            border: 1px solid white;
+            background-color: rgb(42, 53, 77);
+            color: rgb(233, 194, 135);
+            font-size: 20px;
+            height: 80px;
+            width: 244px;
+            margin-bottom: 10px;
+        }
+
+        .current-player-image {
+            height: 50px;
+            width: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game">
+        <div class="current-player-board">
+            <div>
+                <div>Текущий игрок</div>
+                <img src="./src/players/01-0.png" class="current-player-image">
+            </div>
+        </div>
+
+        <div class="row">
+            <div id="0_0" class="cell" onclick="place(this)"></div>
+            <div id="1_0" class="cell" onclick="place(this)"></div>
+            <div id="2_0" class="cell" onclick="place(this)"></div>
+        </div>
+
+        <div class="row">
+            <div id="0_1" class="cell" onclick="place(this)"></div>
+            <div id="1_1" class="cell" onclick="place(this)"></div>
+            <div id="2_1" class="cell" onclick="place(this)"></div>
+        </div>
+
+        <div class="row">
+            <div id="0_2" class="cell" onclick="place(this)"></div>
+            <div id="1_2" class="cell" onclick="place(this)"></div>
+            <div id="2_2" class="cell" onclick="place(this)"></div>
+        </div>
+    </div>
+    <br />
+
+    <button onclick="changeTheme(player0Image01, playerXImage01)" class="change-theme-button">Theme #1</button>
+    <button onclick="changeTheme(player0Image02, playerXImage02)" class="change-theme-button">Theme #2</button>
+    <button onclick="changeTheme(player0Image03, playerXImage03)" class="change-theme-button">Theme #3</button>
+
+    <br />
+
+    <button onclick="reset()" class="reset-button">Reset</button>
+
+    <script>
+        /*Указываем переменные, обозначающие состояние игры.*/
+
+        /*Переменная "currentPlayer" обозначает текущего игрока.*/
+        let currentPlayer = "0";
+
+        /*Переменная "won" обозначает имеется ли победитель на данный момент.*/
+        let won = false;
+
+        /*Следующие переменные обозначают ссылки на картинки 0-игрока всех тем.*/
+        let player0Image01 = "./src/players/01-0.png";
+        let player0Image02 = "./src/players/02-0.png";
+        let player0Image03 = "./src/players/03-0.png";
+
+        /*Следующие переменные обозначают ссылки на картинки X-игрока всех тем.*/
+        let playerXImage01 = "./src/players/01-X.png";
+        let playerXImage02 = "./src/players/02-X.png";
+        let playerXImage03 = "./src/players/03-X.png";
+
+        /*Переменная "image0" содержит ссылку на изображение 0-игрока текущей темы. 
+        Изначально используется 1-я тема.*/
+        let image0 = player0Image01;
+
+        /*Переменная "imageX" содержит ссылку на изображение X-игрока текущей темы. 
+        Изначально используется 1-я тема.*/
+        let imageX = playerXImage01;
+
+        /*----------------------------------------------------------------------------------------*/
+
+        /*Описываем функцию "place()", которая размещает крестики или нолики на игровом поле. В 
+        качестве параметра получает объект, связанный с одной из клеток на игровом поле. Эта функция 
+        вызывается при событии "onclick" у клеток на игровом поле.*/
+        function place(box) {
+            /*Сначала проверяем имеются ли дочерние элементы у клетки, у которой сработало
+            событие "onclick", чтобы нельзя было проставить более одного изображения в одной клетке,
+            или есть ли у нас уже победитель. Если срабатывает одно из этих условий,
+            то мы выходим из этой функции при помощи "return".*/
+            if (box.children.length !== 0 || won) {
+                return;
+            };            
+
+            /*Вызываем функцию "createStep()", отдаем ей в качестве параметра ячейку, чтобы
+            она в ней разместила чей-то ход.*/            
+            createStep(box);
+
+            /*Вызываем функцию "changeCurrentPlayer()", чтобы поменять текущего игрока на противоположного.*/            
+            changeCurrentPlayer();
+
+            /*Вызываем функцию showCurrentPlayerImage(), чтобы проинформать игроков чей сейчас ход.*/
+            showCurrentPlayerImage();
+
+            /*В конце вызываем функцию "checkGameBoard()", которая проверяет поле на наличие победителя.*/
+            checkGameBoard();
+        };        
+
+        /*Функция "createStep()" создает заготовку для чьего-то хода и размещает ее в полученной через
+        параметры клетке.*/
+        function createStep(somePlace) {
+            /*Далее создаем переменную "newItem", которая создает тег "img". Эта переменная
+            будет служить заготовкой для элемента "img", который впоследствии будет добавлен как дочерний
+            элемент в клетку, у которой произошло событие "onclick".*/
+            let newItem = document.createElement("img");
+
+            /*Далее в зависимости от того, кто на данный момент является текущим игроком, мы заполняем
+            нашу заготовку "newItem". Если текущий игрок у нас "0", то указываем ссылку на изображение в качестве 
+            переменной "image0" и добавляем заготовке классы "class-0" и "new-image". Иначе если текущий игрок у нас "X", 
+            то указываем ссылку на изображение в качестве переменной "imageX" и добавляем заготовке классы "class-X" и "new-image".
+            Классы "class-0" и "class-X" нужны, чтобы можно было в любой момент достучаться до отрисованных
+            изображений на поле и, например, заменить ссылки на изображения. А класс "new-image" нужен только лишь для того, чтобы
+            придать нужные размеры изображениям.*/
+            if (currentPlayer === "0") {
+                newItem.src = image0;
+                newItem.classList.add("class-0", "new-image");
+            } else {
+                newItem.src = imageX;
+                newItem.classList.add("class-X", "new-image");
+            };
+
+            /*Далее мы обращаемся к объекту, связанному с нашей клеткой, полученного через параметры,
+            и вызываем у него метод "appendChild()" и отдаем ему в качестве параметра нашу заготовку для
+            чьего-то хода. В итоге мы отрисуем чей-то ход в переданной клетке.*/
+            somePlace.appendChild(newItem);
+        };
+
+        /*Функция "changeCurrentPlayer()" меняет текущего игрока на противоположного при помощи тернарного выражения.*/
+        function changeCurrentPlayer() {
+            currentPlayer === "0" ? currentPlayer = "X" : currentPlayer = "0";
+        };
+
+        /*Определяем функцию "checkGameBoard()", которая проверяет поле на наличие победителя.*/
+        function checkGameBoard() {
+            /*Запускаем цикл "for", который будет иметь 3 цикла.*/
+            for (let i = 0; i < document.getElementsByClassName("row")[0].children.length; i++) {
+                /*Вызываем функцию "checkWinner()", которая на основе переданных ей
+                параметров определяет есть ли у нас победитель. Здесь мы передаем ей
+                такие параметры, чтобы за каждый цикл мы проверили каждый столбец. Здесь мы
+                добавили проверку есть ли у нас победитель, чтобы не было повторных проверок
+                на победу, после того как уже был объявлен победитель.*/
+                if (!won) {
+                    checkWinner(i + "_0", i + "_1", i + "_2");
+                };
+            };
+
+            for (let i = 0; i < document.getElementsByClassName("row")[0].children.length; i++) {
+                /*Вызываем функцию "checkWinner()", которая на основе переданных ей
+                параметров определяет есть ли у нас победитель. Здесь мы передаем ей
+                такие параметры, чтобы за каждый цикл мы проверили каждую строчку. Здесь мы
+                добавили проверку есть ли у нас победитель, чтобы не было повторных проверок
+                на победу, после того как уже был объявлен победитель.*/
+                if (!won) {
+                    checkWinner("0_" + i, "1_" + i, "2_" + i);
+                };
+            };
+
+            /*Далее после цикла "for" вызываем еще 2 раза функцию "checkWinner()", которая 
+            на основе переданных ей параметров определяет есть ли у нас победитель. Здесь 
+            мы передаем ей такие параметры, чтобы мы проверили каждую диагональ. Здесь мы
+                добавили проверку есть ли у нас победитель, чтобы не было повторных проверок
+                на победу, после того как уже был объявлен победитель.*/
+            if (!won) {
+                checkWinner("0_0", "1_1", "2_2");
+            };
+
+            if (!won) {
+                checkWinner("0_2", "1_1", "2_0");
+            };
+
+            /*Здесь мы проверяем, есть ли победа, если нет, то активируем функцию "checkDraw()",
+            которая проверяет доску на наличие ничьи.*/
+            if (!won) {
+                checkDraw();
+            };
+        };
+
+        /*Описываем функцию "checkWinner()", которая на основе переданных ей параметров 
+        определяет есть ли у нас победитель. Параметры передаются ей от функции "checkGameBoard()" 
+        в виде текстовых значений id ячеек в строках, столбцах или диагоналях.*/
+        function checkWinner(first, second, third) {
+            /*Подготавливаем локальные переменные, которые будут временно хранить текстовые значения,
+            обозначающие свойства "src" у HTML-элементов "img", которые в свою очередь будут дочерними
+            элементами ячеек, id которых были переданы в эту функцию.*/
+            let firstSrc;
+            let secondSrc;
+            let thirdSrc;
+
+            /*Далее у каждой полученной ячейки мы проверяем, есть ли у них 0-й дочерний элемент, то есть
+            элемент "img", который в свою очередь будет означать, что в этой клетке уже сделан кем-то ход.
+            Если же так окажется, что у одной из ячеек нет дочерних элементов, то мы сразу же выходим из
+            этой функции вообще, так как дальше не имеет смысла проверять строку, столбец или диагональ.*/
+            if (document.getElementById(first).children[0]) {
+                firstSrc = document.getElementById(first).children[0].src;
+            } else {
+                return;
+            };
+
+            if (document.getElementById(second).children[0]) {
+                secondSrc = document.getElementById(second).children[0].src;
+            } else {
+                return;
+            };
+
+            if (document.getElementById(third).children[0]) {
+                thirdSrc = document.getElementById(third).children[0].src;
+            } else {
+                return;
+            };
+
+            /*Если у нас все свойства "src" в полученных ячейках равны, то есть в какой-то
+            строке, столбце или диагонали имеются ходы какого-то одного игрока, то сообщаем
+            что у нас есть победитель, иначе сообщаем, что победителья еще нет.*/
+            if (firstSrc === secondSrc && firstSrc === thirdSrc) {
+                console.log('we have a winner!');
+                alert("WINNER!");
+                won = true;
+            } else {
+                console.log('there is no winner yet!');
+            };
+        };
+
+        /*Функция "checkDraw()" нужна для того, чтобып проверять доску на наличие ничьи.*/
+        function checkDraw() {
+            /*Сначала создаем переменную "childrenCount", которая нужна для подсчета количества детей*/
+            let childrenCount = 0;
+
+            /*Далее пробегаем по всем элементам с классом "cell", то есть по всем ячейкам, и подсчитываем
+            количество их дочерних элементов.*/
+            for (let i = 0; i < document.getElementsByClassName("cell").length; i++) {
+                if (document.getElementsByClassName("cell")[i].children.length === 1) {
+                    childrenCount++;
+                };
+            };
+
+            /*Если у нас в какой-то момент времени есть 9 дочерних элементов у ячеек, то есть
+            у каждой по одному, что означает, что на поле не осталось пустых ячеек, и еще нет
+            победителя, то мы объявляем ничью и указываем, что у нас есть победитель, чтобы
+            не было возможности дальше играть.*/
+            if (childrenCount === 9 && !won) {
+                console.log('we have no winner, but we have a draw!');
+                alert("DRAW!");
+                won = true;
+            };
+        };
+
+        /*Функция "reset" нужна для того, чтобы перезапускать игру.*/
+        function reset() {
+            /*Сначала сбрасываем переменные "won" и "currentPlayer" до начально значения.*/
+            won = false;
+            currentPlayer = "0";
+
+            /*Далее пишем "for" внутри другого "for" для того, чтобы проверить первым "for" каждую строку,
+            а вторым "for" проверить каждую клетку внутри каждой строки и зачистить их.*/
+            for (let i = 0; i < document.getElementsByClassName("row").length; i++) {
+                for (let j = 0; j < document.getElementsByClassName("row")[i].children.length; j++) {
+                    document.getElementsByClassName("row")[i].children[j].innerText = "";
+                };
+            };
+
+            /*Вызываем функцию showCurrentPlayerImage(), чтобы проинформать игроков чей сейчас ход.*/
+            showCurrentPlayerImage();
+        };
+
+        /*Функция "changeTheme()" нужна для того, чтобы менять тему. Эта функция получает
+        два параметра, которые будут является текстовыми значениями, обозначающие ссылки на картинки.*/
+        function changeTheme(tempPlayer0Image, tempPlayerXImage) {
+            /*Сначала мы переназначем переменные "image0" и "imageX" для того, чтобы новые ходы
+            игроков отрисовывали уже новые картинки.*/
+            image0 = tempPlayer0Image;
+            imageX = tempPlayerXImage;
+
+            /*Далее пробегаемся по всем элементам "img", у которых есть класс "class-0", наличие которого
+            обозначает, что это ходы игрока "0", и заменяем изображения в этих элементах на новые. Тем
+            самым мы перерисуем все уже существующие ходы игрока 0.*/
+            for (let i = 0; i < document.getElementsByClassName("class-0").length; i++) {
+                document.getElementsByClassName("class-0")[i].src = image0;
+            };
+
+
+            /*Далее пробегаемся по всем элементам "img", у которых есть класс "class-X", наличие которого
+            обозначает, что это ходы игрока "X", и заменяем изображения в этих элементах на новые. Тем
+            самым мы перерисуем все уже существующие ходы игрока X.*/
+            for (let i = 0; i < document.getElementsByClassName("class-X").length; i++) {
+                document.getElementsByClassName("class-X")[i].src = imageX;
+            };
+
+            /*Вызываем функцию showCurrentPlayerImage(), чтобы проинформать игроков чей сейчас ход с
+            актуальным изображением.*/
+            showCurrentPlayerImage();
+        };
+
+        /*Функция showCurrentPlayerImage() информирует игроков чей сейчас ход.*/
+        function showCurrentPlayerImage() {
+            /*Если текущий игрок 0, то вверху в отдельном поле меняем свойство "src" у
+            элемента "img" на ссылку на картинку этого игрока, иначе на картинку игрок X.*/
+            if (currentPlayer === "0") {
+                document.getElementsByClassName('current-player-image')[0].src = image0;
+            } else {
+                document.getElementsByClassName('current-player-image')[0].src = imageX;
+            };
+        };
+    </script>
+</body>
+
+<footer></footer>
+
+</html>

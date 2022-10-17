@@ -21,38 +21,124 @@
 </head>
 
 <body>
-    Щелкни, чтобы сыграть в крестики-нолики.<br/>
+    Щелкни, чтобы сыграть в крестики-нолики.<br />
     <div>
         <div class="row">
-            <div onclick="place(this)"></div>
-            <div onclick="place(this)"></div>
-            <div onclick="place(this)"></div>
+            <div id="0_0" onclick="place(this)"></div>
+            <div id="1_0" onclick="place(this)"></div>
+            <div id="2_0" onclick="place(this)"></div>
         </div>
+
         <div class="row">
-            <div onclick="place(this)"></div>
-            <div onclick="place(this)"></div>
-            <div onclick="place(this)"></div>
+            <div id="0_1" onclick="place(this)"></div>
+            <div id="1_1" onclick="place(this)"></div>
+            <div id="2_1" onclick="place(this)"></div>
         </div>
+
         <div class="row">
-            <div onclick="place(this)"></div>
-            <div onclick="place(this)"></div>
-            <div onclick="place(this)"></div>
+            <div id="0_2" onclick="place(this)"></div>
+            <div id="1_2" onclick="place(this)"></div>
+            <div id="2_2" onclick="place(this)"></div>
         </div>
     </div>
 
     <script>
-        var currentPlayer = "0";
+        /*Указываем переменные, обозначающие состояние игры.*/
 
+        /*Переменная "currentPlayer" обозначает текущего игрока.*/
+        var currentPlayer = "X";
+
+        /*Переменная "won" обозначает имеется ли победитель на данный момент.*/
+        var won = false;
+
+        /*----------------------------------------------------------------------------------------*/
+
+        /*Описываем функцию "place()", которая размещает крестики или нолики на игровом поле
+        в зависимости от текущего игрока, меняет текущего игрока каждый ход и вызывает функцию,
+        которая проверяет поле на наличие победителя. В качестве параметра получает объект, связанный
+        с одной из клеток на игровом поле. Эта функция вызывается при событии "onclick" у клеток на 
+        игровом поле.*/
         function place(box) {
+            /*Сначала проверяем не равен ли пустой строке текст внутри клетки, у которой сработало
+            событие "onclick" или есть ли у нас уже победитель. Если срабатывает одно из этих условий,
+            то мы выходим из этой функции при помощи "return".*/
+            if (box.innerText !== "" || won) {
+                return;
+            };
+
+            /*Дальше в клетке, у которой сработало событие "onclick", внутри указываем
+            текст равный обозначению текущего игрока.*/
             box.innerText = currentPlayer;
 
-            if (currentPlayer == "0") {
-                currentPlayer = "X";
-            }
-            else {
-                currentPlayer = "0";
-            }
-        }
+            /*Далее меняем текущего игрока на противоположного.*/
+            currentPlayer === "0" ? currentPlayer = "X" : currentPlayer = "0";
+
+            /*В конце вызываем функцию "checkGameBoard()", которая проверяет поле на наличие 
+            победителя.*/
+            checkGameBoard();
+        };
+
+        /*Определяем функцию "checkGameBoard()", которая проверяет поле на наличие победителя.*/
+        function checkGameBoard() {
+            /*Запускаем цикл "for", который будет иметь 3 цикла.*/
+            for (var i = 0; i <= 2; i++) {
+                /*Вызываем функцию "checkWinner()", которая на основе переданных ей
+                параметров определяет есть ли у нас победитель. Здесь мы передаем ей
+                такие параметры, чтобы за каждый цикл мы проверили каждый столбец.*/
+                checkWinner(
+                    document.getElementById(i + "_0").innerText,
+                    document.getElementById(i + "_1").innerText,
+                    document.getElementById(i + "_2").innerText
+                );
+
+                /*Вызываем функцию "checkWinner()", которая на основе переданных ей
+                параметров определяет есть ли у нас победитель. Здесь мы передаем ей
+                такие параметры, чтобы за каждый цикл мы проверили каждую строчку.*/
+                checkWinner(
+                    document.getElementById("0_" + i).innerText,
+                    document.getElementById("1_" + i).innerText,
+                    document.getElementById("2_" + i).innerText
+                );
+            };
+
+            /*Далее после цикла "for" вызываем еще 2 раза функцию "checkWinner()", которая 
+            на основе переданных ей параметров определяет есть ли у нас победитель. Здесь 
+            мы передаем ей такие параметры, чтобы мы проверили каждую диагональ.*/
+            checkWinner(
+                document.getElementById("0_0").innerText,
+                document.getElementById("1_1").innerText,
+                document.getElementById("2_2").innerText
+            );
+
+            checkWinner(
+                document.getElementById("0_2").innerText,
+                document.getElementById("1_1").innerText,
+                document.getElementById("2_0").innerText
+            );
+        };
+
+        /*Описываем функцию "checkWinner()", которая на основе переданных ей параметров 
+        определяет есть ли у нас победитель.*/
+        function checkWinner(first, second, third) {
+            console.log(first);
+            console.log(second);
+            console.log(third);
+
+            /*Если первый параметр не пустой и равен и второму, и третьему, то
+            есть у нас есть полностью заполненная одним игроком строка, столбец или 
+            диагональ, тогда сообщаем, что у нас есть победитель и меняем состояние
+            игры касательно наличия победителя, чтобы мы не могли продолжать дальше
+            игру. Иначе сообщаем, что у нас все еще нет победителя.*/
+            if (first !== "" && first === second && first === third) {
+                console.log('we have a winner!');
+                alert("WINNER!");
+                won = true;
+            } else {
+                console.log('there is no winner yet!');
+            };
+
+            console.log('---------')
+        };
     </script>
 </body>
 
