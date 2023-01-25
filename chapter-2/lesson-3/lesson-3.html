@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Змейка</title>
+
+    <link rel='stylesheet' href='css/lesson-3.css'>
+</head>
+
+<body>
+    <div class="difficulties">
+        <div class="game-title">
+            <h1>Snake</h1>
+        </div>
+
+        <div class="ui-difficulties">
+            <p>Choose difficulty</p>
+            <button class="btn-diff-easy">Easy</button>
+            <button class="btn-diff-med">Medium</button>
+            <button class="btn-diff-hard">Hard</button>
+        </div>
+    </div>
+
+    <div class="maps">
+        <div class="game-maps-title">
+            <p>Choose map</p>
+        </div>
+
+        <div class="ui-maps">
+            <div>
+                <img src="./src/map1.png" alt="map-01" class="img-maps-01">
+            </div>
+
+            <div>
+                <img src="./src/map2.png" alt="map-02" class="img-maps-02">
+            </div>
+
+            <div>
+                <img src="./src/map3.png" alt="map-03" class="img-maps-03">
+            </div>
+        </div>
+
+    </div>
+
+    <div class="game-screen">
+        <div class="game">
+            <canvas id='canvas' width='1000' height='700'></canvas>
+        </div>
+    
+        <div class="extra-board">
+            <button class="restart-btn" onclick="game.fullRestart();">Restart</button>
+    
+            <div class="counting-score">
+                <p class="score">Score: 0</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src='js/lesson-3.js'></script>
+</body>
+
+<footer></footer>
+
+</html>
