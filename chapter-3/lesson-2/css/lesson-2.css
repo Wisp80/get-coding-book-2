@@ -4,10 +4,103 @@
     overflow-y: hidden;
 }
 
-.mainframe {
-    margin-top: 50px;
-    display: flex;    
-    justify-content: space-around;
+body {
+    display: flex;
+    justify-content: center;
+    font-family: Calibri;
+}
+
+.hide-it {
+    display: none;
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/
+
+.game-container {
+    border: 1px solid black;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    margin-top: 50px;
+    width: 1600px;
+    height: 800px;
+}
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
+.start-screen {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
+.gametitle-text {
+    font-size: 50px;
+}
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
+.main-settings-container {
+    width: 80%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.players-mode-container,
+.best-of-mode-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.players-mode-container-text,
+.best-of-mode-container-text {
+    font-size: 24px;
+}
+
+.two-players-vs-two-ai-button,
+.two-players-vs-one-ai-button,
+.one-player-vs-one-ai-button,
+.best-of-one-button,
+.best-of-three-button,
+.best-of-five-button {
+    font-family: Calibri;
+    font-size: 16px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    width: 150px;
+    height: 30px;
+}
+
+.highlighted-button {
+    background-color: rgb(75, 194, 75);
+}
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
+.play-button-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.play-button {
+    font-family: Calibri;
+    font-size: 30px;
+    width: 200px;
+    height: 60px;
+}
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
+.mainframe {
+    display: flex;
+    justify-content: space-around;
+    display: none;
+}

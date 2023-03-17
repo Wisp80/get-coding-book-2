@@ -98,8 +98,8 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
     };
 
     this.reset = function () {
-        this.x = 320;
-        this.y = 240;
+        this.x = 800;
+        this.y = 400;
         this.xSpeed = 6;
         this.ySpeed = 0;
     };
@@ -157,7 +157,7 @@ function updateBall(ball) {
     if (collidedWithPlayer || collidedWithAi) {
         ball.reverseX();
         ball.modifyXSpeedBy(1);
-        let speedUpValue = collidedWithPlayer ? player.speedModifier : ai.speedModifier;        
+        let speedUpValue = collidedWithPlayer ? player.speedModifier : ai.speedModifier;
         ball.modifyYSpeedBy(speedUpValue);
     };
 };
@@ -230,4 +230,57 @@ function tick() {
     window.setTimeout('tick()', 1000 / 60);
 };
 
-tick();
+/*-------------------------------------------------------------------------------------------------------------*/
+
+let bestOfOption = 3;
+
+function chooseBestOfOption(el) {
+    el.classList.add('highlighted-button')
+
+    for (let i = 0; i < document.getElementsByClassName('best-of-mode-container')[0].children.length; i++) {
+        if (document.getElementsByClassName('best-of-mode-container')[0].children[i] !== el) {
+            document.getElementsByClassName('best-of-mode-container')[0].children[i].classList.remove('highlighted-button');
+        };
+    };
+
+    if (el.innerText === 'Best of 1') {
+        bestOfOption = 1;
+    } else if (el.innerText === 'Best of 3') {
+        bestOfOption = 3;
+    } else {
+        bestOfOption = 5;
+    }
+};
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
+function startGame() {
+    document.getElementsByClassName('start-screen')[0].style.display = 'none';
+    document.getElementsByClassName('mainframe')[0].style.display = 'flex';
+
+    initiateGameBasedOnBestOfOption();
+};
+
+function initiateGameBasedOnBestOfOption() {
+    if (bestOfOption === 1) {
+        startBestOfOneMode();
+    } else if (bestOfOption === 3) {
+        startBestOfThreeMode();
+    } else if (bestOfOption === 5) {
+        startBestOfFiveMode();
+    };
+};
+
+function startBestOfOneMode() {
+    tick();    
+};
+
+
+
+
+
+
+
+
+
+

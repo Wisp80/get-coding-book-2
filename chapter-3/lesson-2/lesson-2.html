@@ -9,9 +9,40 @@
 </head>
 
 <body>
-    <div class='mainframe'>
-        <canvas id='canvas' width='1600' height='900'></canvas>
-    </div>    
+    <div class="game-container">
+        <div class="start-screen">
+
+            <div class="gametitle-text-container">
+                <p class="gametitle-text">Настольный теннис</p>
+            </div>
+
+            <div class="main-settings-container">
+                <div class="players-mode-container">
+                    <p class="players-mode-container-text">Players mode</p>
+                    <button class="one-player-vs-one-ai-button">1 Player VS AI</button>
+                    <button class="two-players-vs-one-ai-button">1 Player VS 2 AI</button>
+                    <button class="two-players-vs-one-ai-button">2 Players VS AI</button>
+                    <button class="two-players-vs-two-ai-button">2 Players VS 2 AI</button>
+                </div>
+
+                <div class="best-of-mode-container">
+                    <p class="best-of-mode-container-text">Best of ?</p>
+                    <button class="best-of-one-button" onclick="chooseBestOfOption(this)">Best of 1</button>
+                    <button class="best-of-three-button" onclick="chooseBestOfOption(this)">Best of 3</button>
+                    <button class="best-of-five-button" onclick="chooseBestOfOption(this)">Best of 5</button>
+                </div>
+            </div>
+
+            <div class="play-button-container">
+                <button class="play-button" onclick="startGame()">Play</button>
+            </div>
+        </div>
+
+        <div class='mainframe'>
+            <canvas id='canvas' width='1600' height='900'></canvas>
+        </div>
+    </div>
+
 
     <script src='js/lesson-2.js'></script>
 </body>
