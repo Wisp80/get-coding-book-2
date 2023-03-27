@@ -27,19 +27,31 @@
 
                 <div class="best-of-mode-container">
                     <p class="best-of-mode-container-text">Best of ?</p>
-                    <button class="best-of-one-button" onclick="chooseBestOfOption(this)">Best of 1</button>
-                    <button class="best-of-three-button" onclick="chooseBestOfOption(this)">Best of 3</button>
-                    <button class="best-of-five-button" onclick="chooseBestOfOption(this)">Best of 5</button>
+                    <button class="best-of-one-button" onclick="game.chooseBestOfOption(this)">Best of 1</button>
+                    <button class="best-of-three-button" onclick="game.chooseBestOfOption(this)">Best of 3</button>
+                    <button class="best-of-five-button" onclick="game.chooseBestOfOption(this)">Best of 5</button>
                 </div>
             </div>
 
             <div class="play-button-container">
-                <button class="play-button" onclick="startGame()">Play</button>
+                <button class="play-button" onclick="game.startGame()">Play</button>
             </div>
         </div>
 
         <div class='mainframe'>
-            <canvas id='canvas' width='1600' height='900'></canvas>
+            <canvas id='canvas' width='1600' height='800'></canvas>
+            <div class="wins-info"></div>
+        </div>
+
+        <div class="gameover-container">
+            <div class="gameover-text">GAME OVER</div>
+
+            <div class="score-text"></div>
+
+            <div class="gameover-buttons-container">
+                <button class="restart-button" onclick="game.restart()">Restart</button>
+                <button class="go-to-menu-button" onclick="game.goToMenu()">Menu</button>
+            </div>
         </div>
     </div>
 
