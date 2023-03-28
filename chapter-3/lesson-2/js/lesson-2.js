@@ -8,6 +8,7 @@ let canvasHeight = 800;
 
 let game = {
     bestOfOption: 3,
+    playersModeOption: 11,
     playersWins: 0,
     aiWins: 0,
     matchesCount: 1,
@@ -18,13 +19,26 @@ let game = {
     tick: function () {
         window.clearTimeout(game.tickTimeout);
 
-        controls.playersControls.playerOneControls.initializeWatchPlayerOneControls();
-        controls.playersControls.playerOneControls.updatePlayerOneControls(playerOne);
+        controls.playersControls.initializeWatchPlayersControls();
+        controls.playersControls.updatePlayersControls(playerOne, '38', '40');
+
+        if (game.playersModeOption === 21) {
+            controls.playersControls.updatePlayersControls(playerTwo, '87', '83');
+        };
+
         controls.aiControls.aiOneControls.updateAiOneControls(aiOne, ballOne);
 
         ballOne.updateBall(ballOne);
 
-        render.draw([playerOne, aiOne], [ballOne]);
+        if (game.playersModeOption === 11) {
+            render.draw([playerOne, aiOne], [ballOne]);
+        } else if (game.playersModeOption === 12) {
+            render.draw([playerOne, aiOne], [ballOne]);
+        } else if (game.playersModeOption === 21) {
+            render.draw([playerOne, playerTwo, aiOne], [ballOne]);
+        } else {
+            render.draw([playerOne, playerTwo, aiOne], [ballOne]);
+        };
 
         game.tickTimeout = window.setTimeout('game.tick()', game.tickRate);
     },
@@ -44,6 +58,26 @@ let game = {
             game.bestOfOption = 3;
         } else {
             game.bestOfOption = 5;
+        };
+    },
+
+    choosePlayersModeOption: function (el) {
+        el.classList.add('highlighted-button')
+
+        for (let i = 0; i < document.getElementsByClassName('players-mode-container')[0].children.length; i++) {
+            if (document.getElementsByClassName('players-mode-container')[0].children[i] !== el) {
+                document.getElementsByClassName('players-mode-container')[0].children[i].classList.remove('highlighted-button');
+            };
+        };
+
+        if (el.innerText === '1 Player VS 1 AI') {
+            game.playersModeOption = 11;
+        } else if (el.innerText === '1 Player VS 2 AI') {
+            game.playersModeOption = 12;
+        } else if (el.innerText === '2 Players VS 1 AI') {
+            game.playersModeOption = 21;
+        } else {
+            game.playersModeOption = 22;
         };
     },
 
@@ -108,6 +142,7 @@ function Paddle(x, y, width, height, speedModifier, currentSpeedModifier) {
     this.width = width;
     this.height = height;
     this.speedModifier = speedModifier;
+    this.currentSpeedModifier = currentSpeedModifier;
 
     this.hasCollidedWith = function (ball) {
         let paddleLeftWall = this.x;
@@ -127,42 +162,42 @@ function Paddle(x, y, width, height, speedModifier, currentSpeedModifier) {
         return false;
     };
 
-    this.move = function (keyCode) {
-        let nextY = this.y;
-
-        if (keyCode == 40) {
-            nextY += 5;
-            this.speedModifier = currentSpeedModifier;
-        } else if (keyCode == 38) {
-            nextY += -5;
-            this.speedModifier = currentSpeedModifier;
-        };
-
-        nextY = nextY < 0 ? 0 : nextY;
-        nextY = nextY + this.height > canvasHeight ? canvasHeight - this.height : nextY;
-        this.y = nextY;
-    };
-
     this.reset = function () {
         this.x = x;
         this.y = y;
     }
 };
 
-let defaultPlayerPaddleWidth = 25;
-let defaultPlayerPaddleHeight = 100;
-let defaultPlayerPaddleXPosition = 5;
-let defaultPlayerPaddleYPosition = (canvasHeight - defaultPlayerPaddleHeight) / 2;
-let defaultPlayerPaddleSpeedModifier = 1;
-let currentPlayerPaddleSpeedModifier = 1.5;
+let defaultPlayerOnePaddleWidth = 25;
+let defaultPlayerOnePaddleHeight = 100;
+let defaultPlayerOnePaddleXPosition = 5;
+let defaultPlayerOnePaddleYPosition = (canvasHeight - defaultPlayerOnePaddleHeight) / 2;
+let defaultPlayerOnePaddleSpeedModifier = 1;
+let currentPlayerOnePaddleSpeedModifier = 1.5;
 
 let playerOne = new Paddle(
-    defaultPlayerPaddleXPosition,
-    defaultPlayerPaddleYPosition,
-    defaultPlayerPaddleWidth,
-    defaultPlayerPaddleHeight,
-    defaultPlayerPaddleSpeedModifier,
-    currentPlayerPaddleSpeedModifier
+    defaultPlayerOnePaddleXPosition,
+    defaultPlayerOnePaddleYPosition,
+    defaultPlayerOnePaddleWidth,
+    defaultPlayerOnePaddleHeight,
+    defaultPlayerOnePaddleSpeedModifier,
+    currentPlayerOnePaddleSpeedModifier
+);
+
+let defaultPlayerTwoPaddleWidth = 25;
+let defaultPlayerTwoPaddleHeight = 100;
+let defaultPlayerTwoPaddleXPosition = 5;
+let defaultPlayerTwoPaddleYPosition = 0;
+let defaultPlayerTwoPaddleSpeedModifier = 1;
+let currentPlayerTwoPaddleSpeedModifier = 1.5;
+
+let playerTwo = new Paddle(
+    defaultPlayerTwoPaddleXPosition,
+    defaultPlayerTwoPaddleYPosition,
+    defaultPlayerTwoPaddleWidth,
+    defaultPlayerTwoPaddleHeight,
+    defaultPlayerTwoPaddleSpeedModifier,
+    currentPlayerTwoPaddleSpeedModifier
 );
 
 let defaultAiPaddleWidth = 25;
@@ -246,7 +281,7 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
             ball.reverseY();
         };
 
-        let collidedWithPlayer = playerOne.hasCollidedWith(ball);
+        let collidedWithPlayer = playerOne.hasCollidedWith(ball) || playerTwo.hasCollidedWith(ball);
         let collidedWithAi = aiOne.hasCollidedWith(ball);
 
         if (collidedWithPlayer || collidedWithAi) {
@@ -277,15 +312,31 @@ let ballOne = new Ball(
 let controls = {
     aiControls: {
         aiOneControls: {
+            move: function (keyCode) {
+                let nextY = aiOne.y;
+
+                if (keyCode === '40') {
+                    nextY += 5;
+                    aiOne.speedModifier = aiOne.currentSpeedModifier;
+                } else if (keyCode === '38') {
+                    nextY += -5;
+                    aiOne.speedModifier = aiOne.currentSpeedModifier;
+                };
+
+                nextY = nextY < 0 ? 0 : nextY;
+                nextY = nextY + aiOne.height > canvasHeight ? canvasHeight - aiOne.height : nextY;
+                aiOne.y = nextY;
+            },
+
             updateAiOneControls: function (ai, ball) {
                 let aiMiddle = ai.y + (ai.height / 2);
 
                 if (aiMiddle < ball.y) {
-                    ai.move(40);
+                    controls.aiControls.aiOneControls.move('40');
                 };
 
                 if (aiMiddle > ball.y) {
-                    ai.move(38);
+                    controls.aiControls.aiOneControls.move('38');
                 };
             }
         },
@@ -298,23 +349,33 @@ let controls = {
     },
 
     playersControls: {
-        playerOneControls: {
-            heldDownKeysByPlayerOne: {},
+        heldDownKeysByPlayers: {},
 
-            updatePlayerOneControls: function (player) {
-                for (let keyCode in this.heldDownKeysByPlayerOne) {
-                    player.move(keyCode);
-                };
-            },
+        move: function (keyCode, player, keyUp, keyDown) {
+            let nextY = player.y;
 
-            initializeWatchPlayerOneControls: function () {
-                window.addEventListener('keydown', () => { this.heldDownKeysByPlayerOne[event.keyCode] = true; }, false);
-                window.addEventListener('keyup', () => { delete this.heldDownKeysByPlayerOne[event.keyCode]; }, false);
-            }
+            if (keyCode === keyDown) {
+                nextY += 5;
+                player.speedModifier = player.currentSpeedModifier;
+            } else if (keyCode === keyUp) {
+                nextY += -5;
+                player.speedModifier = player.currentSpeedModifier;
+            };
+
+            nextY = nextY < 0 ? 0 : nextY;
+            nextY = nextY + player.height > canvasHeight ? canvasHeight - player.height : nextY;
+            player.y = nextY;
         },
 
-        playerTwoControls: {
+        updatePlayersControls: function (player, keyUp, keyDown) {
+            for (let keyCode in this.heldDownKeysByPlayers) {
+                controls.playersControls.move(keyCode, player, keyUp, keyDown);
+            };
+        },
 
+        initializeWatchPlayersControls: function () {
+            window.addEventListener('keydown', () => { this.heldDownKeysByPlayers[event.keyCode] = true; }, false);
+            window.addEventListener('keyup', () => { delete this.heldDownKeysByPlayers[event.keyCode]; }, false);
         }
     }
 };
