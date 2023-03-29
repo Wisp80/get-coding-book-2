@@ -1,8 +1,21 @@
-let canvas = document.getElementById('canvas');
+let canvas = document.getElementsByClassName('canvas')[0];
 let ctx = canvas.getContext('2d');
-
 let canvasWidth = 1600;
 let canvasHeight = 800;
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
+let helper = {
+    getTrueRandomNumber: function (lowerBound, upperBound) {
+        let coin = Math.floor(Math.random() * 2);
+
+        if (coin === 0) {
+            return Math.floor(Math.random() * lowerBound);
+        } else {
+            return Math.floor(Math.random() * upperBound);
+        };
+    }
+};
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
@@ -20,24 +33,24 @@ let game = {
         window.clearTimeout(game.tickTimeout);
 
         controls.playersControls.initializeWatchPlayersControls();
-        controls.playersControls.updatePlayersControls(playerOne, '38', '40');
+        controls.playersControls.updatePlayersControls(players.playerOne, '38', '40');
 
         if (game.playersModeOption === 21) {
-            controls.playersControls.updatePlayersControls(playerTwo, '87', '83');
+            controls.playersControls.updatePlayersControls(players.playerTwo, '87', '83');
         };
 
-        controls.aiControls.aiOneControls.updateAiOneControls(aiOne, ballOne);
+        controls.aiControls.aiOneControls.updateAiOneControls(ai.aiOne, balls.ballOne);
 
-        ballOne.updateBall(ballOne);
+        balls.ballOne.updateBall();
 
         if (game.playersModeOption === 11) {
-            render.draw([playerOne, aiOne], [ballOne]);
+            render.draw([players.playerOne, ai.aiOne], [balls.ballOne]);
         } else if (game.playersModeOption === 12) {
-            render.draw([playerOne, aiOne], [ballOne]);
+            render.draw([players.playerOne, ai.aiOne], [balls.ballOne]);
         } else if (game.playersModeOption === 21) {
-            render.draw([playerOne, playerTwo, aiOne], [ballOne]);
+            render.draw([players.playerOne, players.playerTwo, ai.aiOne], [balls.ballOne]);
         } else {
-            render.draw([playerOne, playerTwo, aiOne], [ballOne]);
+            render.draw([players.playerOne, players.playerTwo, ai.aiOne], [balls.ballOne]);
         };
 
         game.tickTimeout = window.setTimeout('game.tick()', game.tickRate);
@@ -82,17 +95,34 @@ let game = {
     },
 
     startGame: function () {
+        if (game.playersModeOption === 11 || game.playersModeOption === 12) {
+            players.playerOne.y = (canvasHeight - playersPaddlesData.playerOnePaddleData.height) / 2;
+
+            players.playerTwo = null;
+        };
+
+        if (game.playersModeOption === 21 || game.playersModeOption === 22) {
+            players.playerTwo = new Paddle(
+                playersPaddlesData.playerTwoPaddleData.xPosition,
+                playersPaddlesData.playerTwoPaddleData.yPosition,
+                playersPaddlesData.playerTwoPaddleData.width,
+                playersPaddlesData.playerTwoPaddleData.height,
+                playersPaddlesData.playerTwoPaddleData.defaultSpeedModifier,
+                playersPaddlesData.playerTwoPaddleData.currentSpeedModifier
+            );
+        };
+
         game.updateWinsInfoAndScoreText();
         document.getElementsByClassName('start-screen')[0].style.display = 'none';
         document.getElementsByClassName('mainframe')[0].style.display = 'flex';
-        ballOne.reset();
+        balls.ballOne.reset();
         game.tick();
     },
 
     restart: function () {
         document.getElementsByClassName('gameover-container')[0].style.display = 'none';
         document.getElementsByClassName('mainframe')[0].style.display = 'flex';
-        ballOne.reset();
+        balls.ballOne.reset();
     },
 
     goToMenu: function () {
@@ -101,16 +131,16 @@ let game = {
     },
 
     updateScore: function () {
-        ballOne.reset();
-        playerOne.reset();
-        aiOne.reset();
+        balls.ballOne.reset();
+        players.playerOne.reset();
+        ai.aiOne.reset();
 
         game.updateWinsInfoAndScoreText();
 
         game.matchesCount++;
 
         if (game.aiWins >= (game.bestOfOption / 2) + 0.5 || game.playersWins >= (game.bestOfOption / 2) + 0.5) {
-            ballOne.freeze();
+            balls.ballOne.freeze();
 
             document.getElementsByClassName('mainframe')[0].style.display = 'none';
             document.getElementsByClassName('gameover-container')[0].style.display = 'flex';
@@ -164,57 +194,80 @@ function Paddle(x, y, width, height, speedModifier, currentSpeedModifier) {
 
     this.reset = function () {
         this.x = x;
-        this.y = y;
+
+        if (game.playersModeOption === 11 || game.playersModeOption === 12) {
+            this.y = (canvasHeight - playerOnePaddleData.height) / 2;
+        } else {
+            this.y = y;
+        };
     }
 };
 
-let defaultPlayerOnePaddleWidth = 25;
-let defaultPlayerOnePaddleHeight = 100;
-let defaultPlayerOnePaddleXPosition = 5;
-let defaultPlayerOnePaddleYPosition = (canvasHeight - defaultPlayerOnePaddleHeight) / 2;
-let defaultPlayerOnePaddleSpeedModifier = 1;
-let currentPlayerOnePaddleSpeedModifier = 1.5;
+let playersPaddlesData = {
+    playerOnePaddleData: {
+        width: 25,
+        height: 100,
+        xPosition: 5,
+        yPosition: 500,
+        defaultSpeedModifier: 1,
+        currentSpeedModifier: 1.5
+    },
 
-let playerOne = new Paddle(
-    defaultPlayerOnePaddleXPosition,
-    defaultPlayerOnePaddleYPosition,
-    defaultPlayerOnePaddleWidth,
-    defaultPlayerOnePaddleHeight,
-    defaultPlayerOnePaddleSpeedModifier,
-    currentPlayerOnePaddleSpeedModifier
-);
+    playerTwoPaddleData: {
+        width: 25,
+        height: 100,
+        xPosition: 5,
+        yPosition: 200,
+        defaultSpeedModifier: 1,
+        currentSpeedModifier: 1.5,
+    }
+};
 
-let defaultPlayerTwoPaddleWidth = 25;
-let defaultPlayerTwoPaddleHeight = 100;
-let defaultPlayerTwoPaddleXPosition = 5;
-let defaultPlayerTwoPaddleYPosition = 0;
-let defaultPlayerTwoPaddleSpeedModifier = 1;
-let currentPlayerTwoPaddleSpeedModifier = 1.5;
+let players = {
+    playerOne: new Paddle(
+        playersPaddlesData.playerOnePaddleData.xPosition,
+        playersPaddlesData.playerOnePaddleData.yPosition,
+        playersPaddlesData.playerOnePaddleData.width,
+        playersPaddlesData.playerOnePaddleData.height,
+        playersPaddlesData.playerOnePaddleData.defaultSpeedModifier,
+        playersPaddlesData.playerOnePaddleData.currentSpeedModifier
+    ),
 
-let playerTwo = new Paddle(
-    defaultPlayerTwoPaddleXPosition,
-    defaultPlayerTwoPaddleYPosition,
-    defaultPlayerTwoPaddleWidth,
-    defaultPlayerTwoPaddleHeight,
-    defaultPlayerTwoPaddleSpeedModifier,
-    currentPlayerTwoPaddleSpeedModifier
-);
+    playerTwo: null
+};
 
-let defaultAiPaddleWidth = 25;
-let defaultAiPaddleHeight = 100;
-let defaultAiPaddleXPosition = 1570;
-let defaultAiPaddleYPosition = (canvasHeight - defaultAiPaddleHeight) / 2;
-let defaultAiPaddleSpeedModifier = 1;
-let currentAiPaddleSpeedModifier = 1.5;
+let aiPaddlesData = {
+    aiOnePaddleData: {
+        width: 25,
+        height: 100,
+        xPosition: 1570,
+        yPosition: 350,
+        defaultSpeedModifier: 1,
+        currentSpeedModifier: 1.5
+    },
 
-let aiOne = new Paddle(
-    defaultAiPaddleXPosition,
-    defaultAiPaddleYPosition,
-    defaultAiPaddleWidth,
-    defaultAiPaddleHeight,
-    defaultAiPaddleSpeedModifier,
-    currentAiPaddleSpeedModifier
-);
+    aiTwoPaddleData: {
+        width: 25,
+        height: 100,
+        xPosition: 1570,
+        yPosition: 500,
+        defaultSpeedModifier: 1,
+        currentSpeedModifier: 1.5
+    }
+};
+
+let ai = {
+    aiOne: new Paddle(
+        aiPaddlesData.aiOnePaddleData.xPosition,
+        aiPaddlesData.aiOnePaddleData.yPosition,
+        aiPaddlesData.aiOnePaddleData.width,
+        aiPaddlesData.aiOnePaddleData.height,
+        aiPaddlesData.aiOnePaddleData.defaultSpeedModifier,
+        aiPaddlesData.aiOnePaddleData.currentSpeedModifier
+    ),
+
+    aiTwo: null
+};
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
@@ -234,10 +287,10 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
     };
 
     this.reset = function () {
-        this.x = defaultBallOneXPosition;
-        this.y = defaultBallOneYPosition;
-        this.xSpeed = defaultBallOneXSpeed;
-        this.ySpeed = defaultBallOneYSpeed;
+        this.x = ballOneData.xPosition;
+        this.y = ballOneData.yPosition;
+        this.xSpeed = ballOneData.xSpeed;
+        this.ySpeed = helper.getTrueRandomNumber(-4, 4);
     };
 
     this.modifyXSpeedBy = function (modification) {
@@ -264,48 +317,59 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
     };
 
     this.updateBall = function (ball) {
-        ball.x += ball.xSpeed;
-        ball.y += ball.ySpeed;
+        this.x += this.xSpeed;
+        this.y += this.ySpeed;
 
-        if (ball.x < 0) {
+        if (this.x < 0) {
             game.aiWins++;
             game.updateScore();
         };
 
-        if (ball.x > canvasWidth) {
+        if (this.x > canvasWidth) {
             game.playersWins++;
             game.updateScore();
         };
 
-        if (ball.y <= 0 || ball.y >= canvasHeight) {
-            ball.reverseY();
+        if (this.y <= 0 || this.y >= canvasHeight) {
+            this.reverseY();
         };
 
-        let collidedWithPlayer = playerOne.hasCollidedWith(ball) || playerTwo.hasCollidedWith(ball);
-        let collidedWithAi = aiOne.hasCollidedWith(ball);
+        let collidedWithPlayer;
+
+        if (players.playerTwo !== null) {
+            collidedWithPlayer = players.playerOne.hasCollidedWith(this) || players.playerTwo.hasCollidedWith(this);
+        } else {
+            collidedWithPlayer = players.playerOne.hasCollidedWith(this);
+        };
+
+        let collidedWithAi = ai.aiOne.hasCollidedWith(this);
 
         if (collidedWithPlayer || collidedWithAi) {
-            ball.reverseX();
-            ball.modifyXSpeedBy(1);
-            let speedUpValue = collidedWithPlayer ? playerOne.speedModifier : aiOne.speedModifier;
-            ball.modifyYSpeedBy(speedUpValue);
+            this.reverseX();
+            this.modifyXSpeedBy(1);
+            let speedUpValue = collidedWithPlayer ? players.playerOne.speedModifier : ai.aiOne.speedModifier;
+            this.modifyYSpeedBy(speedUpValue);
         };
     };
 };
 
-let defaultBallOneXPosition = canvasWidth / 2;
-let defaultBallOneYPosition = canvasHeight / 2;
-let defaultBallOneRadius = 3;
-let defaultBallOneXSpeed = 11;
-let defaultBallOneYSpeed = 0;
+let ballOneData = {
+    xPosition: canvasWidth / 2,
+    yPosition: canvasHeight / 2,
+    radius: 3,
+    xSpeed: 11,
+    ySpeed: helper.getTrueRandomNumber(-4, 4)
+};
 
-let ballOne = new Ball(
-    defaultBallOneXPosition,
-    defaultBallOneYPosition,
-    defaultBallOneRadius,
-    defaultBallOneXSpeed,
-    defaultBallOneYSpeed
-);
+let balls = {
+    ballOne: new Ball(
+        ballOneData.xPosition,
+        ballOneData.yPosition,
+        ballOneData.radius,
+        ballOneData.xSpeed,
+        ballOneData.ySpeed
+    )
+};
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
@@ -313,19 +377,19 @@ let controls = {
     aiControls: {
         aiOneControls: {
             move: function (keyCode) {
-                let nextY = aiOne.y;
+                let nextY = ai.aiOne.y;
 
                 if (keyCode === '40') {
                     nextY += 5;
-                    aiOne.speedModifier = aiOne.currentSpeedModifier;
+                    ai.aiOne.speedModifier = ai.aiOne.currentSpeedModifier;
                 } else if (keyCode === '38') {
                     nextY += -5;
-                    aiOne.speedModifier = aiOne.currentSpeedModifier;
+                    ai.aiOne.speedModifier = ai.aiOne.currentSpeedModifier;
                 };
 
                 nextY = nextY < 0 ? 0 : nextY;
-                nextY = nextY + aiOne.height > canvasHeight ? canvasHeight - aiOne.height : nextY;
-                aiOne.y = nextY;
+                nextY = nextY + ai.aiOne.height > canvasHeight ? canvasHeight - ai.aiOne.height : nextY;
+                ai.aiOne.y = nextY;
             },
 
             updateAiOneControls: function (ai, ball) {
