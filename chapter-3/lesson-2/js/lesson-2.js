@@ -14,91 +14,137 @@ let helper = {
         } else {
             return Math.floor(Math.random() * upperBound);
         };
+    },
+
+    changeDisplay: function (element, displayValue) {
+        document.getElementsByClassName(element)[0].style.display = displayValue;
+    },
+
+    highlightElement: function (el, parentContainerClass) {
+        el.classList.add('highlighted-button');
+
+        for (let i = 0; i < document.getElementsByClassName(parentContainerClass)[0].children.length; i++) {
+            if (document.getElementsByClassName(parentContainerClass)[0].children[i] !== el) {
+                document.getElementsByClassName(parentContainerClass)[0].children[i].classList.remove('highlighted-button');
+            };
+        };
     }
 };
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
 let game = {
-    bestOfOption: 3,
+    bestOfOption: 1,
     playersModeOption: 11,
     playersWins: 0,
     aiWins: 0,
-    matchesCount: 1,
-
     tickTimeout: null,
     tickRate: 1000 / 60,
 
     tick: function () {
         window.clearTimeout(game.tickTimeout);
 
-        controls.playersControls.initializeWatchPlayersControls();
-        controls.playersControls.updatePlayersControls(players.playerOne, '38', '40');
+        game.prepareDataForNextTick();
 
-        if (game.playersModeOption === 21) {
-            controls.playersControls.updatePlayersControls(players.playerTwo, '87', '83');
-        };
-
-        controls.aiControls.aiOneControls.updateAiOneControls(ai.aiOne, balls.ballOne);
-
-        balls.ballOne.updateBall();
-
-        if (game.playersModeOption === 11) {
-            render.draw([players.playerOne, ai.aiOne], [balls.ballOne]);
-        } else if (game.playersModeOption === 12) {
-            render.draw([players.playerOne, ai.aiOne], [balls.ballOne]);
-        } else if (game.playersModeOption === 21) {
-            render.draw([players.playerOne, players.playerTwo, ai.aiOne], [balls.ballOne]);
-        } else {
-            render.draw([players.playerOne, players.playerTwo, ai.aiOne], [balls.ballOne]);
-        };
+        game.renderPreparedDataForNextTick();
 
         game.tickTimeout = window.setTimeout('game.tick()', game.tickRate);
     },
 
-    chooseBestOfOption: function (el) {
-        el.classList.add('highlighted-button')
+    prepareDataForNextTick: function () {
+        controls.playersControls.initializeWatchPlayersControls();
 
-        for (let i = 0; i < document.getElementsByClassName('best-of-mode-container')[0].children.length; i++) {
-            if (document.getElementsByClassName('best-of-mode-container')[0].children[i] !== el) {
-                document.getElementsByClassName('best-of-mode-container')[0].children[i].classList.remove('highlighted-button');
-            };
+        controls.playersControls.updatePlayersControls(players.playerOne, '38', '40');
+
+        if (game.playersModeOption === 21 || game.playersModeOption === 22) {
+            controls.playersControls.updatePlayersControls(players.playerTwo, '87', '83');
         };
 
-        if (el.innerText === 'Best of 1') {
-            game.bestOfOption = 1;
-        } else if (el.innerText === 'Best of 3') {
-            game.bestOfOption = 3;
-        } else {
-            game.bestOfOption = 5;
+        controls.aiControls.updateAiControls(ai.aiOne, balls.ballOne);
+
+        if (game.playersModeOption === 12 || game.playersModeOption === 22) {
+            controls.aiControls.updateAiControls(ai.aiTwo, balls.ballOne);
+        };
+
+        balls.ballOne.updateBall();
+    },
+
+    renderPreparedDataForNextTick: function () {
+        switch (game.playersModeOption) {
+            case 11:
+                render.draw([players.playerOne, ai.aiOne], [balls.ballOne]);
+                break;
+
+            case 12:
+                render.draw([players.playerOne, ai.aiOne, ai.aiTwo], [balls.ballOne]);
+                break;
+
+            case 21:
+                render.draw([players.playerOne, players.playerTwo, ai.aiOne], [balls.ballOne]);
+                break;
+
+            case 22:
+                render.draw([players.playerOne, players.playerTwo, ai.aiOne, ai.aiTwo], [balls.ballOne]);
+                break;
+
+            default:
+                break;
+        };
+    },
+
+    chooseBestOfOption: function (el) {
+        helper.highlightElement(el, 'best-of-mode-container');
+
+        switch (el.innerText) {
+            case 'Best of 1':
+                game.bestOfOption = 1;
+                break;
+
+            case 'Best of 3':
+                game.bestOfOption = 3;
+                break;
+
+            case 'Best of 5':
+                game.bestOfOption = 5;
+                break;
+
+            default:
+                break;
         };
     },
 
     choosePlayersModeOption: function (el) {
-        el.classList.add('highlighted-button')
+        helper.highlightElement(el, 'players-mode-container');
 
-        for (let i = 0; i < document.getElementsByClassName('players-mode-container')[0].children.length; i++) {
-            if (document.getElementsByClassName('players-mode-container')[0].children[i] !== el) {
-                document.getElementsByClassName('players-mode-container')[0].children[i].classList.remove('highlighted-button');
-            };
-        };
+        switch (el.innerText) {
+            case '1 Player VS 1 AI':
+                game.playersModeOption = 11;
+                break;
 
-        if (el.innerText === '1 Player VS 1 AI') {
-            game.playersModeOption = 11;
-        } else if (el.innerText === '1 Player VS 2 AI') {
-            game.playersModeOption = 12;
-        } else if (el.innerText === '2 Players VS 1 AI') {
-            game.playersModeOption = 21;
-        } else {
-            game.playersModeOption = 22;
+            case '1 Player VS 2 AI':
+                game.playersModeOption = 12;
+                break;
+
+            case '2 Players VS 1 AI':
+                game.playersModeOption = 21;
+                break;
+
+            case '2 Players VS 2 AI':
+                game.playersModeOption = 22;
+                break;
+
+            default:
+                break;
         };
     },
 
     startGame: function () {
         if (game.playersModeOption === 11 || game.playersModeOption === 12) {
-            players.playerOne.y = (canvasHeight - playersPaddlesData.playerOnePaddleData.height) / 2;
-
             players.playerTwo = null;
+        };
+
+        if (game.playersModeOption === 11 || game.playersModeOption === 21) {
+            ai.aiTwo = null;
         };
 
         if (game.playersModeOption === 21 || game.playersModeOption === 22) {
@@ -112,42 +158,58 @@ let game = {
             );
         };
 
+        if (game.playersModeOption === 12 || game.playersModeOption === 22) {
+            ai.aiTwo = new Paddle(
+                aiPaddlesData.aiOnePaddleData.xPosition,
+                aiPaddlesData.aiOnePaddleData.yPosition,
+                aiPaddlesData.aiOnePaddleData.width,
+                aiPaddlesData.aiOnePaddleData.height,
+                aiPaddlesData.aiOnePaddleData.defaultSpeedModifier,
+                aiPaddlesData.aiOnePaddleData.currentSpeedModifier
+            );
+        };
+
+        controls.playersControls.reset([players.playerOne, players.playerTwo]);
+        controls.aiControls.reset([ai.aiOne, ai.aiTwo]);
+        controls.ballsControls.reset([balls.ballOne]);
+
         game.updateWinsInfoAndScoreText();
-        document.getElementsByClassName('start-screen')[0].style.display = 'none';
-        document.getElementsByClassName('mainframe')[0].style.display = 'flex';
-        balls.ballOne.reset();
+
+        helper.changeDisplay('start-screen', 'none');
+        helper.changeDisplay('mainframe', 'flex');
+
         game.tick();
     },
 
     restart: function () {
-        document.getElementsByClassName('gameover-container')[0].style.display = 'none';
-        document.getElementsByClassName('mainframe')[0].style.display = 'flex';
-        balls.ballOne.reset();
+        helper.changeDisplay('gameover-container', 'none');
+        helper.changeDisplay('mainframe', 'flex');
+
+        controls.playersControls.reset([players.playerOne, players.playerTwo]);
+        controls.aiControls.reset([ai.aiOne, ai.aiTwo]);
+        controls.ballsControls.reset([balls.ballOne]);
     },
 
-    goToMenu: function () {
-        document.getElementsByClassName('start-screen')[0].style.display = 'flex';
-        document.getElementsByClassName('gameover-container')[0].style.display = 'none';
+    goToMainMenu: function () {
+        helper.changeDisplay('start-screen', 'flex');
+        helper.changeDisplay('gameover-container', 'none');
     },
 
     updateScore: function () {
-        balls.ballOne.reset();
-        players.playerOne.reset();
-        ai.aiOne.reset();
+        controls.playersControls.reset([players.playerOne, players.playerTwo]);
+        controls.aiControls.reset([ai.aiOne, ai.aiTwo]);
+        controls.ballsControls.reset([balls.ballOne]);
 
         game.updateWinsInfoAndScoreText();
 
-        game.matchesCount++;
-
         if (game.aiWins >= (game.bestOfOption / 2) + 0.5 || game.playersWins >= (game.bestOfOption / 2) + 0.5) {
-            balls.ballOne.freeze();
+            controls.ballsControls.freeze([balls.ballOne]);
 
-            document.getElementsByClassName('mainframe')[0].style.display = 'none';
-            document.getElementsByClassName('gameover-container')[0].style.display = 'flex';
+            helper.changeDisplay('mainframe', 'none');
+            helper.changeDisplay('gameover-container', 'flex');
 
             game.updateWinsInfoAndScoreText();
             game.resetScore();
-
             document.getElementsByClassName('wins-info')[0].innerHTML = 'You ' + game.playersWins + ' : ' + game.aiWins + ' AI';
         };
     },
@@ -160,7 +222,6 @@ let game = {
     resetScore: function () {
         game.aiWins = 0;
         game.playersWins = 0;
-        game.matchesCount = 1;
     }
 };
 
@@ -191,16 +252,6 @@ function Paddle(x, y, width, height, speedModifier, currentSpeedModifier) {
 
         return false;
     };
-
-    this.reset = function () {
-        this.x = x;
-
-        if (game.playersModeOption === 11 || game.playersModeOption === 12) {
-            this.y = (canvasHeight - playerOnePaddleData.height) / 2;
-        } else {
-            this.y = y;
-        };
-    }
 };
 
 let playersPaddlesData = {
@@ -241,7 +292,7 @@ let aiPaddlesData = {
         width: 25,
         height: 100,
         xPosition: 1570,
-        yPosition: 350,
+        yPosition: 500,
         defaultSpeedModifier: 1,
         currentSpeedModifier: 1.5
     },
@@ -250,7 +301,7 @@ let aiPaddlesData = {
         width: 25,
         height: 100,
         xPosition: 1570,
-        yPosition: 500,
+        yPosition: 200,
         defaultSpeedModifier: 1,
         currentSpeedModifier: 1.5
     }
@@ -286,13 +337,6 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
         this.ySpeed *= -1;
     };
 
-    this.reset = function () {
-        this.x = ballOneData.xPosition;
-        this.y = ballOneData.yPosition;
-        this.xSpeed = ballOneData.xSpeed;
-        this.ySpeed = helper.getTrueRandomNumber(-4, 4);
-    };
-
     this.modifyXSpeedBy = function (modification) {
         modification = this.xSpeed < 0 ? modification * -1 : modification;
         let nextValue = this.xSpeed + modification;
@@ -311,12 +355,7 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
         this.ySpeed += modification;
     };
 
-    this.freeze = function () {
-        this.xSpeed = 0;
-        this.ySpeed = 0;
-    };
-
-    this.updateBall = function (ball) {
+    this.updateBall = function () {
         this.x += this.xSpeed;
         this.y += this.ySpeed;
 
@@ -335,6 +374,7 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
         };
 
         let collidedWithPlayer;
+        let collidedWithAi
 
         if (players.playerTwo !== null) {
             collidedWithPlayer = players.playerOne.hasCollidedWith(this) || players.playerTwo.hasCollidedWith(this);
@@ -342,7 +382,11 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
             collidedWithPlayer = players.playerOne.hasCollidedWith(this);
         };
 
-        let collidedWithAi = ai.aiOne.hasCollidedWith(this);
+        if (ai.aiTwo !== null) {
+            collidedWithAi = ai.aiOne.hasCollidedWith(this) || ai.aiTwo.hasCollidedWith(this);
+        } else {
+            collidedWithAi = ai.aiOne.hasCollidedWith(this);
+        };
 
         if (collidedWithPlayer || collidedWithAi) {
             this.reverseX();
@@ -358,7 +402,7 @@ let ballOneData = {
     yPosition: canvasHeight / 2,
     radius: 3,
     xSpeed: 11,
-    ySpeed: helper.getTrueRandomNumber(-4, 4)
+    ySpeed: helper.getTrueRandomNumber(-5, 5)
 };
 
 let balls = {
@@ -374,44 +418,6 @@ let balls = {
 /*-------------------------------------------------------------------------------------------------------------*/
 
 let controls = {
-    aiControls: {
-        aiOneControls: {
-            move: function (keyCode) {
-                let nextY = ai.aiOne.y;
-
-                if (keyCode === '40') {
-                    nextY += 5;
-                    ai.aiOne.speedModifier = ai.aiOne.currentSpeedModifier;
-                } else if (keyCode === '38') {
-                    nextY += -5;
-                    ai.aiOne.speedModifier = ai.aiOne.currentSpeedModifier;
-                };
-
-                nextY = nextY < 0 ? 0 : nextY;
-                nextY = nextY + ai.aiOne.height > canvasHeight ? canvasHeight - ai.aiOne.height : nextY;
-                ai.aiOne.y = nextY;
-            },
-
-            updateAiOneControls: function (ai, ball) {
-                let aiMiddle = ai.y + (ai.height / 2);
-
-                if (aiMiddle < ball.y) {
-                    controls.aiControls.aiOneControls.move('40');
-                };
-
-                if (aiMiddle > ball.y) {
-                    controls.aiControls.aiOneControls.move('38');
-                };
-            }
-        },
-
-        aiTwoControl: {
-            updateAiTwoControls: function () {
-
-            }
-        }
-    },
-
     playersControls: {
         heldDownKeysByPlayers: {},
 
@@ -440,6 +446,78 @@ let controls = {
         initializeWatchPlayersControls: function () {
             window.addEventListener('keydown', () => { this.heldDownKeysByPlayers[event.keyCode] = true; }, false);
             window.addEventListener('keyup', () => { delete this.heldDownKeysByPlayers[event.keyCode]; }, false);
+        },
+
+        reset: function (players) {
+            if (game.playersModeOption === 11 || game.playersModeOption === 12) {
+                players[0].y = (canvasHeight - playersPaddlesData.playerOnePaddleData.height) / 2;
+            } else if (game.playersModeOption === 21 || game.playersModeOption === 22) {
+                players[0].y = playersPaddlesData.playerOnePaddleData.yPosition;
+
+                if (players[1] !== null) {
+                    players[1].y = playersPaddlesData.playerTwoPaddleData.yPosition;
+                };
+            };
+        }
+    },
+
+    aiControls: {
+        move: function (keyCode, ai) {
+            let nextY = ai.y;
+
+            if (keyCode === '40') {
+                nextY += 5;
+                ai.speedModifier = ai.currentSpeedModifier;
+            } else if (keyCode === '38') {
+                nextY += -5;
+                ai.speedModifier = ai.currentSpeedModifier;
+            };
+
+            nextY = nextY < 0 ? 0 : nextY;
+            nextY = nextY + ai.height > canvasHeight ? canvasHeight - ai.height : nextY;
+            ai.y = nextY;
+        },
+
+        updateAiControls: function (ai, ball) {
+            let aiMiddle = ai.y + (ai.height / 2);
+
+            if (aiMiddle < ball.y) {
+                controls.aiControls.move('40', ai);
+            };
+
+            if (aiMiddle > ball.y) {
+                controls.aiControls.move('38', ai);
+            };
+        },
+
+        reset: function (ai) {
+            if (game.playersModeOption === 11 || game.playersModeOption === 21) {
+                ai[0].y = (canvasHeight - aiPaddlesData.aiOnePaddleData.height) / 2;
+            } else if (game.playersModeOption === 12 || game.playersModeOption === 22) {
+                ai[0].y = aiPaddlesData.aiOnePaddleData.yPosition;
+
+                if (ai[1] !== null) {
+                    ai[1].y = aiPaddlesData.aiTwoPaddleData.yPosition;
+                };
+            };
+        }
+    },
+
+    ballsControls: {
+        reset: function (balls) {
+            for (let i = 0; i < balls.length; i++) {
+                balls[i].x = ballOneData.xPosition;
+                balls[i].y = ballOneData.yPosition;
+                balls[i].xSpeed = ballOneData.xSpeed;
+                balls[i].ySpeed = helper.getTrueRandomNumber(-5, 5);
+            };
+        },
+
+        freeze: function (balls) {
+            for (let i = 0; i < balls.length; i++) {
+                balls[i].xSpeed = 0;
+                balls[i].ySpeed = 0;
+            };
         }
     }
 };
