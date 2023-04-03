@@ -60,10 +60,10 @@ let game = {
             controls.playersControls.updatePlayersControls(players.playerTwo, '87', '83');
         };
 
-        controls.aiControls.updateAiControls(ai.aiOne, balls.ballOne);
+        controls.aiControls.updateAiControlsOne(ai.aiOne, balls.ballOne);
 
         if (game.playersModeOption === 12 || game.playersModeOption === 22) {
-            controls.aiControls.updateAiControls(ai.aiTwo, balls.ballOne);
+            controls.aiControls.updateAiControlsTwo(ai.aiTwo, ai.aiOne, balls.ballOne);
         };
 
         balls.ballOne.updateBall();
@@ -72,19 +72,19 @@ let game = {
     renderPreparedDataForNextTick: function () {
         switch (game.playersModeOption) {
             case 11:
-                render.draw([players.playerOne, ai.aiOne], [balls.ballOne]);
+                render.draw([players.playerOne, ai.aiOne], [balls.ballOne], ['red', 'yellow'], ['white']);
                 break;
 
             case 12:
-                render.draw([players.playerOne, ai.aiOne, ai.aiTwo], [balls.ballOne]);
+                render.draw([players.playerOne, ai.aiOne, ai.aiTwo], [balls.ballOne], ['red', 'yellow', 'green'], ['white']);
                 break;
 
             case 21:
-                render.draw([players.playerOne, players.playerTwo, ai.aiOne], [balls.ballOne]);
+                render.draw([players.playerOne, players.playerTwo, ai.aiOne], [balls.ballOne], ['red', 'blue', 'yellow'], ['white']);
                 break;
 
             case 22:
-                render.draw([players.playerOne, players.playerTwo, ai.aiOne, ai.aiTwo], [balls.ballOne]);
+                render.draw([players.playerOne, players.playerTwo, ai.aiOne, ai.aiTwo], [balls.ballOne], ['red', 'blue', 'yellow', 'green'], ['white']);
                 break;
 
             default:
@@ -154,7 +154,8 @@ let game = {
                 playersPaddlesData.playerTwoPaddleData.width,
                 playersPaddlesData.playerTwoPaddleData.height,
                 playersPaddlesData.playerTwoPaddleData.defaultSpeedModifier,
-                playersPaddlesData.playerTwoPaddleData.currentSpeedModifier
+                playersPaddlesData.playerTwoPaddleData.currentSpeedModifier,
+                playersPaddlesData.playerTwoPaddleData.speed
             );
         };
 
@@ -165,10 +166,10 @@ let game = {
                 aiPaddlesData.aiOnePaddleData.width,
                 aiPaddlesData.aiOnePaddleData.height,
                 aiPaddlesData.aiOnePaddleData.defaultSpeedModifier,
-                aiPaddlesData.aiOnePaddleData.currentSpeedModifier
+                aiPaddlesData.aiOnePaddleData.currentSpeedModifier,
+                aiPaddlesData.aiOnePaddleData.speed
             );
         };
-
         controls.playersControls.reset([players.playerOne, players.playerTwo]);
         controls.aiControls.reset([ai.aiOne, ai.aiTwo]);
         controls.ballsControls.reset([balls.ballOne]);
@@ -227,13 +228,14 @@ let game = {
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
-function Paddle(x, y, width, height, speedModifier, currentSpeedModifier) {
+function Paddle(x, y, width, height, speedModifier, currentSpeedModifier, speed) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
     this.speedModifier = speedModifier;
     this.currentSpeedModifier = currentSpeedModifier;
+    this.speed = speed;
 
     this.hasCollidedWith = function (ball) {
         let paddleLeftWall = this.x;
@@ -256,21 +258,23 @@ function Paddle(x, y, width, height, speedModifier, currentSpeedModifier) {
 
 let playersPaddlesData = {
     playerOnePaddleData: {
-        width: 25,
+        width: 10,
         height: 100,
         xPosition: 5,
         yPosition: 500,
         defaultSpeedModifier: 1,
-        currentSpeedModifier: 1.5
+        currentSpeedModifier: 1.5,
+        speed: 7
     },
 
     playerTwoPaddleData: {
-        width: 25,
+        width: 10,
         height: 100,
         xPosition: 5,
         yPosition: 200,
         defaultSpeedModifier: 1,
         currentSpeedModifier: 1.5,
+        speed: 7
     }
 };
 
@@ -281,7 +285,8 @@ let players = {
         playersPaddlesData.playerOnePaddleData.width,
         playersPaddlesData.playerOnePaddleData.height,
         playersPaddlesData.playerOnePaddleData.defaultSpeedModifier,
-        playersPaddlesData.playerOnePaddleData.currentSpeedModifier
+        playersPaddlesData.playerOnePaddleData.currentSpeedModifier,
+        playersPaddlesData.playerOnePaddleData.speed
     ),
 
     playerTwo: null
@@ -289,21 +294,23 @@ let players = {
 
 let aiPaddlesData = {
     aiOnePaddleData: {
-        width: 25,
+        width: 10,
         height: 100,
-        xPosition: 1570,
+        xPosition: 1585,
         yPosition: 500,
         defaultSpeedModifier: 1,
-        currentSpeedModifier: 1.5
+        currentSpeedModifier: 1.5,
+        speed: 7
     },
 
     aiTwoPaddleData: {
-        width: 25,
+        width: 10,
         height: 100,
-        xPosition: 1570,
+        xPosition: 1585,
         yPosition: 200,
         defaultSpeedModifier: 1,
-        currentSpeedModifier: 1.5
+        currentSpeedModifier: 1.5,
+        speed: 7
     }
 };
 
@@ -314,7 +321,8 @@ let ai = {
         aiPaddlesData.aiOnePaddleData.width,
         aiPaddlesData.aiOnePaddleData.height,
         aiPaddlesData.aiOnePaddleData.defaultSpeedModifier,
-        aiPaddlesData.aiOnePaddleData.currentSpeedModifier
+        aiPaddlesData.aiOnePaddleData.currentSpeedModifier,
+        aiPaddlesData.aiOnePaddleData.speed
     ),
 
     aiTwo: null
@@ -401,7 +409,7 @@ let ballOneData = {
     xPosition: canvasWidth / 2,
     yPosition: canvasHeight / 2,
     radius: 3,
-    xSpeed: 11,
+    xSpeed: 10,
     ySpeed: helper.getTrueRandomNumber(-5, 5)
 };
 
@@ -425,10 +433,10 @@ let controls = {
             let nextY = player.y;
 
             if (keyCode === keyDown) {
-                nextY += 5;
+                nextY += player.speed;
                 player.speedModifier = player.currentSpeedModifier;
             } else if (keyCode === keyUp) {
-                nextY += -5;
+                nextY += -1 * player.speed;
                 player.speedModifier = player.currentSpeedModifier;
             };
 
@@ -466,10 +474,10 @@ let controls = {
             let nextY = ai.y;
 
             if (keyCode === '40') {
-                nextY += 5;
+                nextY += ai.speed;
                 ai.speedModifier = ai.currentSpeedModifier;
             } else if (keyCode === '38') {
-                nextY += -5;
+                nextY += -1 * ai.speed;
                 ai.speedModifier = ai.currentSpeedModifier;
             };
 
@@ -478,7 +486,7 @@ let controls = {
             ai.y = nextY;
         },
 
-        updateAiControls: function (ai, ball) {
+        updateAiControlsOne: function (ai, ball) {
             let aiMiddle = ai.y + (ai.height / 2);
 
             if (aiMiddle < ball.y) {
@@ -487,6 +495,29 @@ let controls = {
 
             if (aiMiddle > ball.y) {
                 controls.aiControls.move('38', ai);
+            };
+        },
+
+        updateAiControlsTwo: function (aiOne, aiTwo, ball) {
+            let aiMiddle = aiOne.y + (aiOne.height / 2);
+
+            if (aiMiddle < ball.y) {
+                controls.aiControls.move('40', aiOne);
+            };
+
+            if (aiMiddle > ball.y) {
+                controls.aiControls.move('38', aiOne);
+            };
+
+            let aiTwoBottom = aiOne.y + aiOne.height;
+            let aiOneTop = aiTwo.y;
+
+            if ((aiOneTop - aiTwoBottom) <= 150) {
+                controls.aiControls.move('38', aiOne);
+            };
+
+            if ((aiOneTop - aiTwoBottom) <= (-1 * aiOne.speed)) {
+                controls.aiControls.move('40', aiTwo);
             };
         },
 
@@ -526,34 +557,37 @@ let controls = {
 
 let render = {
     renderField: function () {
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = '#163728';
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     },
 
-    renderPaddle: function (paddle) {
-        ctx.fillStyle = 'white';
+    renderPaddle: function (paddle, color) {
+        ctx.fillStyle = color;
         ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
     },
 
-    renderBall: function (ball) {
+    renderBall: function (ball, color) {
         ctx.beginPath();
         ctx.arc(ball.x, ball.y, ball.radius, 0, 2 * Math.PI, false);
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = color;
         ctx.fill();
     },
 
-    draw: function (paddles, balls) {
+    draw: function (paddles, balls, paddlesColors, ballsColors) {
+        ctx.globalCompositeOperation = 'source-over';
         this.renderField();
 
         for (let i = 0; i < paddles.length; i++) {
             if (paddles[i]) {
-                this.renderPaddle(paddles[i]);
+                ctx.globalCompositeOperation = 'exclusion';
+                this.renderPaddle(paddles[i], paddlesColors[i]);
             };
         };
 
         for (let i = 0; i < balls.length; i++) {
             if (balls[i]) {
-                this.renderBall(balls[i]);
+                ctx.globalCompositeOperation = 'source-over';
+                this.renderBall(balls[i], ballsColors[i]);
             };
         };
     }
