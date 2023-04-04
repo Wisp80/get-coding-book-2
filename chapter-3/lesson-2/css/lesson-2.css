@@ -25,7 +25,6 @@ body {
 
 .game-container {
     border: 1px solid black;
-    /* border-radius: 10px; */
     display: flex;
     justify-content: center;
     margin-top: 50px;
@@ -71,9 +70,11 @@ body {
     font-size: 24px;
 }
 
-.two-players-vs-two-ai-button,
-.two-players-vs-one-ai-button,
 .one-player-vs-one-ai-button,
+.one-player-vs-two-ai-button,
+.two-players-vs-one-ai-button,
+.two-players-vs-two-ai-button,
+.one-player-vs-one-player-button,
 .best-of-one-button,
 .best-of-three-button,
 .best-of-five-button {

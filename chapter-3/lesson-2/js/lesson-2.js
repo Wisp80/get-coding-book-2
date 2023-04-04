@@ -56,11 +56,13 @@ let game = {
 
         controls.playersControls.updatePlayersControls(players.playerOne, '38', '40');
 
-        if (game.playersModeOption === 21 || game.playersModeOption === 22) {
+        if (game.playersModeOption === 21 || game.playersModeOption === 22 || game.playersModeOption === 33) {
             controls.playersControls.updatePlayersControls(players.playerTwo, '87', '83');
         };
 
-        controls.aiControls.updateAiControlsOne(ai.aiOne, balls.ballOne);
+        if (game.playersModeOption !== 33) {
+            controls.aiControls.updateAiControlsOne(ai.aiOne, balls.ballOne);
+        };
 
         if (game.playersModeOption === 12 || game.playersModeOption === 22) {
             controls.aiControls.updateAiControlsTwo(ai.aiTwo, ai.aiOne, balls.ballOne);
@@ -85,6 +87,10 @@ let game = {
 
             case 22:
                 render.draw([players.playerOne, players.playerTwo, ai.aiOne, ai.aiTwo], [balls.ballOne], ['red', 'blue', 'yellow', 'green'], ['white']);
+                break;
+
+            case 33:
+                render.draw([players.playerOne, players.playerTwo], [balls.ballOne], ['red', 'blue'], ['white']);
                 break;
 
             default:
@@ -133,6 +139,10 @@ let game = {
                 game.playersModeOption = 22;
                 break;
 
+            case 'PVP':
+                game.playersModeOption = 33;
+                break;
+
             default:
                 break;
         };
@@ -161,15 +171,46 @@ let game = {
 
         if (game.playersModeOption === 12 || game.playersModeOption === 22) {
             ai.aiTwo = new Paddle(
-                aiPaddlesData.aiOnePaddleData.xPosition,
-                aiPaddlesData.aiOnePaddleData.yPosition,
-                aiPaddlesData.aiOnePaddleData.width,
-                aiPaddlesData.aiOnePaddleData.height,
-                aiPaddlesData.aiOnePaddleData.defaultSpeedModifier,
-                aiPaddlesData.aiOnePaddleData.currentSpeedModifier,
-                aiPaddlesData.aiOnePaddleData.speed
+                aiPaddlesData.aiTwoPaddleData.xPosition,
+                aiPaddlesData.aiTwoPaddleData.yPosition,
+                aiPaddlesData.aiTwoPaddleData.width,
+                aiPaddlesData.aiTwoPaddleData.height,
+                aiPaddlesData.aiTwoPaddleData.defaultSpeedModifier,
+                aiPaddlesData.aiTwoPaddleData.currentSpeedModifier,
+                aiPaddlesData.aiTwoPaddleData.speed
             );
         };
+
+        if (game.playersModeOption !== 33) {
+            if (ai.aiOne === null) {
+                ai.aiOne = new Paddle(
+                    aiPaddlesData.aiOnePaddleData.xPosition,
+                    aiPaddlesData.aiOnePaddleData.yPosition,
+                    aiPaddlesData.aiOnePaddleData.width,
+                    aiPaddlesData.aiOnePaddleData.height,
+                    aiPaddlesData.aiOnePaddleData.defaultSpeedModifier,
+                    aiPaddlesData.aiOnePaddleData.currentSpeedModifier,
+                    aiPaddlesData.aiOnePaddleData.speed
+                );
+            };
+        };
+
+        if (game.playersModeOption === 33) {
+            ai.aiOne = null;
+            ai.aiTwo = null;
+            players.playerTwo = null;
+
+            players.playerTwo = new Paddle(
+                aiPaddlesData.aiOnePaddleData.xPosition,
+                playersPaddlesData.playerTwoPaddleData.yPosition,
+                playersPaddlesData.playerTwoPaddleData.width,
+                playersPaddlesData.playerTwoPaddleData.height,
+                playersPaddlesData.playerTwoPaddleData.defaultSpeedModifier,
+                playersPaddlesData.playerTwoPaddleData.currentSpeedModifier,
+                playersPaddlesData.playerTwoPaddleData.speed
+            );
+        };
+
         controls.playersControls.reset([players.playerOne, players.playerTwo]);
         controls.aiControls.reset([ai.aiOne, ai.aiTwo]);
         controls.ballsControls.reset([balls.ballOne]);
@@ -211,13 +252,23 @@ let game = {
 
             game.updateWinsInfoAndScoreText();
             game.resetScore();
-            document.getElementsByClassName('wins-info')[0].innerHTML = 'You ' + game.playersWins + ' : ' + game.aiWins + ' AI';
+
+            if (game.playersModeOption === 33) {
+                document.getElementsByClassName('wins-info')[0].innerHTML = 'Player One ' + game.playersWins + ' : ' + game.aiWins + ' Player Two';
+            } else {
+                document.getElementsByClassName('wins-info')[0].innerHTML = 'You ' + game.playersWins + ' : ' + game.aiWins + ' AI';
+            };
         };
     },
 
     updateWinsInfoAndScoreText: function () {
-        document.getElementsByClassName('wins-info')[0].innerHTML = 'You ' + game.playersWins + ' : ' + game.aiWins + ' AI';
-        document.getElementsByClassName('score-text')[0].innerHTML = 'You ' + game.playersWins + ' : ' + game.aiWins + ' AI';
+        if (game.playersModeOption === 33) {
+            document.getElementsByClassName('wins-info')[0].innerHTML = 'Player One ' + game.playersWins + ' : ' + game.aiWins + ' Player Two';
+            document.getElementsByClassName('score-text')[0].innerHTML = 'Player One ' + game.playersWins + ' : ' + game.aiWins + ' Player Two';
+        } else {
+            document.getElementsByClassName('wins-info')[0].innerHTML = 'You ' + game.playersWins + ' : ' + game.aiWins + ' AI';
+            document.getElementsByClassName('score-text')[0].innerHTML = 'You ' + game.playersWins + ' : ' + game.aiWins + ' AI';
+        };
     },
 
     resetScore: function () {
@@ -382,7 +433,7 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
         };
 
         let collidedWithPlayer;
-        let collidedWithAi
+        let collidedWithAi;
 
         if (players.playerTwo !== null) {
             collidedWithPlayer = players.playerOne.hasCollidedWith(this) || players.playerTwo.hasCollidedWith(this);
@@ -390,9 +441,9 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
             collidedWithPlayer = players.playerOne.hasCollidedWith(this);
         };
 
-        if (ai.aiTwo !== null) {
+        if (ai.aiOne !== null && ai.aiTwo !== null) {
             collidedWithAi = ai.aiOne.hasCollidedWith(this) || ai.aiTwo.hasCollidedWith(this);
-        } else {
+        } else if (ai.aiOne !== null && ai.aiTwo === null) {
             collidedWithAi = ai.aiOne.hasCollidedWith(this);
         };
 
@@ -465,6 +516,9 @@ let controls = {
                 if (players[1] !== null) {
                     players[1].y = playersPaddlesData.playerTwoPaddleData.yPosition;
                 };
+            } else if (game.playersModeOption === 33) {
+                players[0].y = (canvasHeight - playersPaddlesData.playerOnePaddleData.height) / 2;
+                players[1].y = (canvasHeight - playersPaddlesData.playerTwoPaddleData.height) / 2;
             };
         }
     },
