@@ -164,7 +164,7 @@ let game = {
                 playersPaddlesData.playerTwoPaddleData.width,
                 playersPaddlesData.playerTwoPaddleData.height,
                 playersPaddlesData.playerTwoPaddleData.defaultSpeedModifier,
-                playersPaddlesData.playerTwoPaddleData.currentSpeedModifier,
+                playersPaddlesData.playerTwoPaddleData.increasedSpeedModifier,
                 playersPaddlesData.playerTwoPaddleData.speed
             );
         };
@@ -176,7 +176,7 @@ let game = {
                 aiPaddlesData.aiTwoPaddleData.width,
                 aiPaddlesData.aiTwoPaddleData.height,
                 aiPaddlesData.aiTwoPaddleData.defaultSpeedModifier,
-                aiPaddlesData.aiTwoPaddleData.currentSpeedModifier,
+                aiPaddlesData.aiTwoPaddleData.increasedSpeedModifier,
                 aiPaddlesData.aiTwoPaddleData.speed
             );
         };
@@ -189,7 +189,7 @@ let game = {
                     aiPaddlesData.aiOnePaddleData.width,
                     aiPaddlesData.aiOnePaddleData.height,
                     aiPaddlesData.aiOnePaddleData.defaultSpeedModifier,
-                    aiPaddlesData.aiOnePaddleData.currentSpeedModifier,
+                    aiPaddlesData.aiOnePaddleData.increasedSpeedModifier,
                     aiPaddlesData.aiOnePaddleData.speed
                 );
             };
@@ -206,7 +206,7 @@ let game = {
                 playersPaddlesData.playerTwoPaddleData.width,
                 playersPaddlesData.playerTwoPaddleData.height,
                 playersPaddlesData.playerTwoPaddleData.defaultSpeedModifier,
-                playersPaddlesData.playerTwoPaddleData.currentSpeedModifier,
+                playersPaddlesData.playerTwoPaddleData.increasedSpeedModifier,
                 playersPaddlesData.playerTwoPaddleData.speed
             );
         };
@@ -279,13 +279,13 @@ let game = {
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
-function Paddle(x, y, width, height, speedModifier, currentSpeedModifier, speed) {
+function Paddle(x, y, width, height, defaultSpeedModifier, increasedSpeedModifier, speed) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
-    this.speedModifier = speedModifier;
-    this.currentSpeedModifier = currentSpeedModifier;
+    this.defaultSpeedModifier = defaultSpeedModifier;
+    this.increasedSpeedModifier = increasedSpeedModifier;
     this.speed = speed;
 
     this.hasCollidedWith = function (ball) {
@@ -314,7 +314,7 @@ let playersPaddlesData = {
         xPosition: 5,
         yPosition: 500,
         defaultSpeedModifier: 1,
-        currentSpeedModifier: 1.5,
+        increasedSpeedModifier: 4,
         speed: 7
     },
 
@@ -324,7 +324,7 @@ let playersPaddlesData = {
         xPosition: 5,
         yPosition: 200,
         defaultSpeedModifier: 1,
-        currentSpeedModifier: 1.5,
+        increasedSpeedModifier: 4,
         speed: 7
     }
 };
@@ -336,7 +336,7 @@ let players = {
         playersPaddlesData.playerOnePaddleData.width,
         playersPaddlesData.playerOnePaddleData.height,
         playersPaddlesData.playerOnePaddleData.defaultSpeedModifier,
-        playersPaddlesData.playerOnePaddleData.currentSpeedModifier,
+        playersPaddlesData.playerOnePaddleData.increasedSpeedModifier,
         playersPaddlesData.playerOnePaddleData.speed
     ),
 
@@ -350,7 +350,7 @@ let aiPaddlesData = {
         xPosition: 1585,
         yPosition: 500,
         defaultSpeedModifier: 1,
-        currentSpeedModifier: 1.5,
+        increasedSpeedModifier: 4,
         speed: 7
     },
 
@@ -360,7 +360,7 @@ let aiPaddlesData = {
         xPosition: 1585,
         yPosition: 200,
         defaultSpeedModifier: 1,
-        currentSpeedModifier: 1.5,
+        increasedSpeedModifier: 4,
         speed: 7
     }
 };
@@ -372,7 +372,7 @@ let ai = {
         aiPaddlesData.aiOnePaddleData.width,
         aiPaddlesData.aiOnePaddleData.height,
         aiPaddlesData.aiOnePaddleData.defaultSpeedModifier,
-        aiPaddlesData.aiOnePaddleData.currentSpeedModifier,
+        aiPaddlesData.aiOnePaddleData.increasedSpeedModifier,
         aiPaddlesData.aiOnePaddleData.speed
     ),
 
@@ -414,6 +414,33 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
         this.ySpeed += modification;
     };
 
+    this.increaseSpeed = function (keyOne, keyTwo, player) {
+        let trueControlKeysPressed = 0;
+
+        for (let key in controls.playersControls.heldDownKeysByPlayers) {
+            if (key === keyOne || key === keyTwo) {
+                trueControlKeysPressed++;
+            };
+        };
+
+        let xSpeedModificator;
+        let ySpeedModificator;
+
+        if (trueControlKeysPressed > 0) {
+            xSpeedModificator = player.increasedSpeedModifier;
+            ySpeedModificator = player.increasedSpeedModifier;
+
+            this.modifyXSpeedBy(xSpeedModificator);
+            this.modifyYSpeedBy(ySpeedModificator);
+        } else {
+            xSpeedModificator = player.defaultSpeedModifier;
+            ySpeedModificator = player.defaultSpeedModifier;
+
+            this.modifyXSpeedBy(xSpeedModificator);
+            this.modifyYSpeedBy(ySpeedModificator);
+        };
+    }
+
     this.updateBall = function () {
         this.x += this.xSpeed;
         this.y += this.ySpeed;
@@ -432,26 +459,45 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
             this.reverseY();
         };
 
-        let collidedWithPlayer;
-        let collidedWithAi;
+        let collidedWithPlayerOne;
+        let collidedWithPlayerTwo;
+        let collidedWithAiOne;
+        let collidedWithAiTwo;
+
+        collidedWithPlayerOne = players.playerOne.hasCollidedWith(this);
 
         if (players.playerTwo !== null) {
-            collidedWithPlayer = players.playerOne.hasCollidedWith(this) || players.playerTwo.hasCollidedWith(this);
-        } else {
-            collidedWithPlayer = players.playerOne.hasCollidedWith(this);
+            collidedWithPlayerTwo = players.playerTwo.hasCollidedWith(this);
         };
 
-        if (ai.aiOne !== null && ai.aiTwo !== null) {
-            collidedWithAi = ai.aiOne.hasCollidedWith(this) || ai.aiTwo.hasCollidedWith(this);
-        } else if (ai.aiOne !== null && ai.aiTwo === null) {
-            collidedWithAi = ai.aiOne.hasCollidedWith(this);
+        if (ai.aiOne !== null) {
+            collidedWithAiOne = ai.aiOne.hasCollidedWith(this);
         };
 
-        if (collidedWithPlayer || collidedWithAi) {
+        if (ai.aiTwo !== null) {
+            collidedWithAiTwo = ai.aiTwo.hasCollidedWith(this);
+        };
+
+        if (collidedWithPlayerOne || collidedWithPlayerTwo || collidedWithAiOne || collidedWithAiTwo) {
             this.reverseX();
-            this.modifyXSpeedBy(1);
-            let speedUpValue = collidedWithPlayer ? players.playerOne.speedModifier : ai.aiOne.speedModifier;
-            this.modifyYSpeedBy(speedUpValue);
+        };
+
+        if (collidedWithPlayerOne) {
+            this.increaseSpeed('38', '40', players.playerOne);
+        };
+
+        if (collidedWithPlayerTwo) {
+            this.increaseSpeed('83', '87', players.playerTwo);
+        };
+
+        if (collidedWithAiOne) {
+            this.modifyXSpeedBy(ai.aiOne.defaultSpeedModifier);
+            this.modifyYSpeedBy(ai.aiOne.defaultSpeedModifier);
+        };
+
+        if (collidedWithAiTwo) {
+            this.modifyXSpeedBy(ai.aiTwo.defaultSpeedModifier);
+            this.modifyYSpeedBy(ai.aiTwo.defaultSpeedModifier);
         };
     };
 };
@@ -485,10 +531,8 @@ let controls = {
 
             if (keyCode === keyDown) {
                 nextY += player.speed;
-                player.speedModifier = player.currentSpeedModifier;
             } else if (keyCode === keyUp) {
                 nextY += -1 * player.speed;
-                player.speedModifier = player.currentSpeedModifier;
             };
 
             nextY = nextY < 0 ? 0 : nextY;
@@ -529,10 +573,10 @@ let controls = {
 
             if (keyCode === '40') {
                 nextY += ai.speed;
-                ai.speedModifier = ai.currentSpeedModifier;
+                ai.defaultSpeedModifier = ai.increasedSpeedModifier;
             } else if (keyCode === '38') {
                 nextY += -1 * ai.speed;
-                ai.speedModifier = ai.currentSpeedModifier;
+                ai.defaultSpeedModifier = ai.increasedSpeedModifier;
             };
 
             nextY = nextY < 0 ? 0 : nextY;
@@ -549,6 +593,10 @@ let controls = {
 
             if (aiMiddle > ball.y) {
                 controls.aiControls.move('38', ai);
+            };
+
+            if (aiMiddle === ball.y) {
+                ai.defaultSpeedModifier = aiPaddlesData.aiOnePaddleData.defaultSpeedModifier;
             };
         },
 
@@ -572,6 +620,10 @@ let controls = {
 
             if ((aiOneTop - aiTwoBottom) <= (-1 * aiOne.speed)) {
                 controls.aiControls.move('40', aiTwo);
+            };
+
+            if (aiMiddle === ball.y) {
+                aiOne.defaultSpeedModifier = aiPaddlesData.aiTwoPaddleData.defaultSpeedModifier;
             };
         },
 
