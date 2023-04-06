@@ -39,14 +39,14 @@ let game = {
     playersWins: 0,
     aiWins: 0,
     tickTimeout: null,
-    tickRate: 1000 / 60,
+    tickRate: 1000 / 120,
 
     tick: function () {
         window.clearTimeout(game.tickTimeout);
 
         game.prepareDataForNextTick();
 
-        game.renderPreparedDataForNextTick();
+        window.requestAnimationFrame(game.renderPreparedDataForNextTick);        
 
         game.tickTimeout = window.setTimeout('game.tick()', game.tickRate);
     },
@@ -211,9 +211,13 @@ let game = {
             );
         };
 
+        game.resetScore();
+
         controls.playersControls.reset([players.playerOne, players.playerTwo]);
         controls.aiControls.reset([ai.aiOne, ai.aiTwo]);
         controls.ballsControls.reset([balls.ballOne]);
+
+        game.updateWinsInfoAndScoreText();
 
         game.updateWinsInfoAndScoreText();
 
@@ -224,6 +228,9 @@ let game = {
     },
 
     restart: function () {
+        game.resetScore();
+        game.updateWinsInfoAndScoreText();
+
         helper.changeDisplay('gameover-container', 'none');
         helper.changeDisplay('mainframe', 'flex');
 
@@ -232,9 +239,16 @@ let game = {
         controls.ballsControls.reset([balls.ballOne]);
     },
 
-    goToMainMenu: function () {
+    goToMainMenuFromGameoverScreen: function () {
         helper.changeDisplay('start-screen', 'flex');
         helper.changeDisplay('gameover-container', 'none');
+    },
+
+    goToMainMenuFromMainframe: function () {
+        controls.ballsControls.freeze([balls.ballOne]);
+
+        helper.changeDisplay('start-screen', 'flex');
+        helper.changeDisplay('mainframe', 'none');
     },
 
     updateScore: function () {
@@ -310,22 +324,22 @@ function Paddle(x, y, width, height, defaultSpeedModifier, increasedSpeedModifie
 let playersPaddlesData = {
     playerOnePaddleData: {
         width: 10,
-        height: 100,
+        height: 125,
         xPosition: 5,
         yPosition: 500,
-        defaultSpeedModifier: 1,
-        increasedSpeedModifier: 4,
-        speed: 7
+        defaultSpeedModifier: 0.5,
+        increasedSpeedModifier: 0.7,
+        speed: 6
     },
 
     playerTwoPaddleData: {
         width: 10,
-        height: 100,
+        height: 125,
         xPosition: 5,
         yPosition: 200,
-        defaultSpeedModifier: 1,
-        increasedSpeedModifier: 4,
-        speed: 7
+        defaultSpeedModifier: 0.5,
+        increasedSpeedModifier: 0.7,
+        speed: 6
     }
 };
 
@@ -346,22 +360,22 @@ let players = {
 let aiPaddlesData = {
     aiOnePaddleData: {
         width: 10,
-        height: 100,
+        height: 125,
         xPosition: 1585,
         yPosition: 500,
-        defaultSpeedModifier: 1,
-        increasedSpeedModifier: 4,
-        speed: 7
+        defaultSpeedModifier: 0.5,
+        increasedSpeedModifier: 0.7,
+        speed: 6
     },
 
     aiTwoPaddleData: {
         width: 10,
-        height: 100,
+        height: 125,
         xPosition: 1585,
         yPosition: 200,
-        defaultSpeedModifier: 1,
-        increasedSpeedModifier: 4,
-        speed: 7
+        defaultSpeedModifier: 0.5,
+        increasedSpeedModifier: 0.7,
+        speed: 6
     }
 };
 
@@ -505,9 +519,9 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
 let ballOneData = {
     xPosition: canvasWidth / 2,
     yPosition: canvasHeight / 2,
-    radius: 3,
-    xSpeed: 10,
-    ySpeed: helper.getTrueRandomNumber(-5, 5)
+    radius: 6,
+    xSpeed: 3,
+    ySpeed: helper.getTrueRandomNumber(-3, 3)
 };
 
 let balls = {
@@ -646,7 +660,7 @@ let controls = {
                 balls[i].x = ballOneData.xPosition;
                 balls[i].y = ballOneData.yPosition;
                 balls[i].xSpeed = ballOneData.xSpeed;
-                balls[i].ySpeed = helper.getTrueRandomNumber(-5, 5);
+                balls[i].ySpeed = helper.getTrueRandomNumber(-3, 3);
             };
         },
 

@@ -29,7 +29,7 @@ body {
     justify-content: center;
     margin-top: 50px;
     width: 1600px;
-    height: 840px;
+    height: 877px;
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/
@@ -115,6 +115,20 @@ body {
 
 .wins-info {
     font-size: 30px;
+}
+
+.mainframe-menu-buttons-container {
+    display: flex;
+    align-items: center;
+}
+
+.mainframe-restart-button,
+.mainframe-go-to-menu-button {
+    font-family: Calibri;
+    font-size: 20px;
+    margin: 5px;
+    width: 150px;
+    height: 30px;
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/

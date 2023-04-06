@@ -41,7 +41,13 @@
 
         <div class='mainframe'>
             <canvas class='canvas' width='1600' height='800'></canvas>
+
             <div class="wins-info"></div>
+
+            <div class="mainframe-menu-buttons-container"> <!-- +++ -->
+                <button class="mainframe-restart-button" onclick="game.restart()">Restart</button> <!-- +++ -->
+                <button class="mainframe-go-to-menu-button" onclick="game.goToMainMenuFromMainframe()">Menu</button> <!-- +++ -->
+            </div> <!-- +++ -->
         </div>
 
         <div class="gameover-container">
@@ -51,7 +57,7 @@
 
             <div class="gameover-buttons-container">
                 <button class="restart-button" onclick="game.restart()">Restart</button>
-                <button class="go-to-menu-button" onclick="game.goToMainMenu()">Menu</button>
+                <button class="go-to-menu-button" onclick="game.goTgoToMainMenuFromGameoverScreenoMainMenu()">Menu</button>
             </div>
         </div>
     </div>
