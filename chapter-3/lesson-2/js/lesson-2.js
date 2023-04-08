@@ -1,19 +1,53 @@
 let canvas = document.getElementsByClassName('canvas')[0];
 let ctx = canvas.getContext('2d');
-let canvasWidth = 1600;
-let canvasHeight = 800;
+
+document.getElementsByClassName('play-button')[0].disabled = true;
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
 let helper = {
-    getTrueRandomNumber: function (lowerBound, upperBound) {
+    getRandomNumberFromLowerBoundToZeroOrFromZeroToUpperBound: function (lowerBound, upperBound) {
         let coin = Math.floor(Math.random() * 2);
 
         if (coin === 0) {
-            return Math.floor(Math.random() * lowerBound);
+            return Math.floor(Math.random() * lowerBound) - Math.random();
         } else {
-            return Math.floor(Math.random() * upperBound);
+            return Math.floor(Math.random() * upperBound) + Math.random();
         };
+    },
+
+    getRandomNumberFromLowerBoundToMinusOneOrFromOneToUpperBound: function (lowerBound, upperBound) {
+        let coin = Math.floor(Math.random() * 2);
+
+        let randomNumber;
+
+        if (coin === 0) {
+            randomNumber = Math.floor(Math.random() * lowerBound) - Math.random();
+
+            if (randomNumber > -1) {
+                randomNumber = randomNumber - 2;
+            };
+
+            return randomNumber;
+        } else {
+            randomNumber = Math.floor(Math.random() * upperBound) + Math.random();
+
+            if (randomNumber < 1) {
+                randomNumber = randomNumber + 2;
+            };
+
+            return randomNumber;
+        };
+    },
+
+    getRandomNumberFromRange: function (lowerBound, upperBound) {
+        let randomNumber = Math.floor(Math.random() * upperBound) + 1;
+
+        if (randomNumber < lowerBound) {
+            randomNumber = lowerBound;
+        };
+
+        return randomNumber;
     },
 
     changeDisplay: function (element, displayValue) {
@@ -28,14 +62,46 @@ let helper = {
                 document.getElementsByClassName(parentContainerClass)[0].children[i].classList.remove('highlighted-button');
             };
         };
+    },
+
+    getRandomColor: function () {
+        let letters = '0123456789ABCDEF';
+        let color = '#';
+
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        };
+
+        return color;
+    },
+
+    sortArray: function (arr) {
+        if (arr.length < 2) {
+            return arr;
+        };
+
+        let pivot = arr[0];
+        let less = [];
+        let greater = [];
+
+        for (let i = 1; i < arr.length; i++) {
+            if (arr[i] < pivot) {
+                less.push(arr[i]);
+            } else {
+                greater.push(arr[i]);
+            };
+        };
+
+        return helper.sortArray(less).concat(pivot, helper.sortArray(greater));
     }
 };
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
 let game = {
-    bestOfOption: 1,
-    playersModeOption: 11,
+    bestOfOption: 9,
+    playersModeOption: 22,
+    ballCountOption: 1,
     playersWins: 0,
     aiWins: 0,
     tickTimeout: null,
@@ -46,7 +112,7 @@ let game = {
 
         game.prepareDataForNextTick();
 
-        window.requestAnimationFrame(game.renderPreparedDataForNextTick);        
+        window.requestAnimationFrame(game.renderPreparedDataForNextTick);
 
         game.tickTimeout = window.setTimeout('game.tick()', game.tickRate);
     },
@@ -61,36 +127,63 @@ let game = {
         };
 
         if (game.playersModeOption !== 33) {
-            controls.aiControls.updateAiControlsOne(ai.aiOne, balls.ballOne);
+            controls.aiControls.updateAiControlsOne(ai.aiOne);
         };
 
         if (game.playersModeOption === 12 || game.playersModeOption === 22) {
-            controls.aiControls.updateAiControlsTwo(ai.aiTwo, ai.aiOne, balls.ballOne);
+            controls.aiControls.updateAiControlsTwo(ai.aiTwo, ai.aiOne);
         };
 
-        balls.ballOne.updateBall();
+        for (let i = 0; i < ballsArray.length; i++) {
+            ballsArray[i].updateBall();
+        };
     },
 
     renderPreparedDataForNextTick: function () {
         switch (game.playersModeOption) {
             case 11:
-                render.draw([players.playerOne, ai.aiOne], [balls.ballOne], ['red', 'yellow'], ['white']);
+                render.draw(
+                    [players.playerOne, ai.aiOne],
+                    ballsArray,
+                    [players.playerOne.color, ai.aiOne.color],
+                    [players.playerOne.strokeColor, ai.aiOne.strokeColor]
+                );
                 break;
 
             case 12:
-                render.draw([players.playerOne, ai.aiOne, ai.aiTwo], [balls.ballOne], ['red', 'yellow', 'green'], ['white']);
+                render.draw(
+                    [players.playerOne, ai.aiOne, ai.aiTwo],
+                    ballsArray,
+                    [players.playerOne.color, ai.aiOne.color, ai.aiTwo.color],
+                    [players.playerOne.strokeColor, ai.aiOne.strokeColor, ai.aiTwo.strokeColor]
+                );
                 break;
 
             case 21:
-                render.draw([players.playerOne, players.playerTwo, ai.aiOne], [balls.ballOne], ['red', 'blue', 'yellow'], ['white']);
+                render.draw(
+                    [players.playerOne, players.playerTwo, ai.aiOne],
+                    ballsArray,
+                    [players.playerOne.color, players.playerTwo.color, ai.aiOne.color],
+                    [players.playerOne.strokeColor, players.playerTwo.strokeColor, ai.aiOne.strokeColor]
+                );
                 break;
 
             case 22:
-                render.draw([players.playerOne, players.playerTwo, ai.aiOne, ai.aiTwo], [balls.ballOne], ['red', 'blue', 'yellow', 'green'], ['white']);
+                render.draw(
+                    [players.playerOne, players.playerTwo, ai.aiOne, ai.aiTwo],
+                    ballsArray,
+                    [players.playerOne.color, players.playerTwo.color, ai.aiOne.color, ai.aiTwo.color],
+                    [players.playerOne.strokeColor, players.playerTwo.strokeColor, ai.aiOne.strokeColor, ai.aiTwo.strokeColor]
+                );
                 break;
 
             case 33:
-                render.draw([players.playerOne, players.playerTwo], [balls.ballOne], ['red', 'blue'], ['white']);
+                render.draw(
+                    [players.playerOne, players.playerTwo],
+                    ballsArray,
+                    [players.playerOne.color, players.playerTwo.color],
+                    [players.playerOne.strokeColor, players.playerTwo.strokeColor]
+                );
                 break;
 
             default:
@@ -114,37 +207,89 @@ let game = {
                 game.bestOfOption = 5;
                 break;
 
+            case 'Best of 7':
+                game.bestOfOption = 7;
+                break;
+
+            case 'Best of 9':
+                game.bestOfOption = 9;
+                break;
+
             default:
                 break;
         };
+    },
+
+    specifyBallCountOption: function (el) {
+        if (el.innerHTML === '+1') {
+            game.ballCountOption++;
+        } else if (el.innerHTML === '-1') {
+            game.ballCountOption--;
+        };
+
+        if (game.ballCountOption <= 0) {
+            game.ballCountOption = 1;
+        } else if (game.ballCountOption >= 11) {
+            game.ballCountOption = 10;
+        };
+
+        document.getElementsByClassName('ball-count')[0].innerHTML = game.ballCountOption;
     },
 
     choosePlayersModeOption: function (el) {
         helper.highlightElement(el, 'players-mode-container');
 
         switch (el.innerText) {
-            case '1 Player VS 1 AI':
+            case '1P vs 1AI':
                 game.playersModeOption = 11;
                 break;
 
-            case '1 Player VS 2 AI':
+            case '1P vs 2AI':
                 game.playersModeOption = 12;
                 break;
 
-            case '2 Players VS 1 AI':
+            case '2P vs 1AI':
                 game.playersModeOption = 21;
                 break;
 
-            case '2 Players VS 2 AI':
+            case '2P vs 2AI':
                 game.playersModeOption = 22;
                 break;
 
-            case 'PVP':
+            case 'PvP':
                 game.playersModeOption = 33;
                 break;
 
             default:
                 break;
+        };
+    },
+
+    enableDisablePlayButton: function () {
+        for (let i = 0; i < document.getElementsByClassName('players-mode-container')[0].children.length; i++) {
+            if (document.getElementsByClassName('players-mode-container')[0].children[i].classList.contains('highlighted-button')) {
+                for (let i = 0; i < document.getElementsByClassName('best-of-mode-container')[0].children.length; i++) {
+                    if (document.getElementsByClassName('best-of-mode-container')[0].children[i].classList.contains('highlighted-button')) {
+                        document.getElementsByClassName('play-button')[0].disabled = false;
+                    };
+                };
+            };
+        };
+    },
+
+    generateBalls: function (count) {
+        ballsArray = [];
+
+        for (let i = 0; i < count; i++) {
+            ballsArray[i] = new Ball(
+                ballData.xPosition + Math.random(),
+                ballData.yPosition + Math.random(),
+                helper.getRandomNumberFromRange(7, 10),
+                helper.getRandomNumberFromLowerBoundToMinusOneOrFromOneToUpperBound(-3, 3),
+                helper.getRandomNumberFromLowerBoundToZeroOrFromZeroToUpperBound(-3, 3),
+                helper.getRandomColor(),
+                helper.getRandomColor()
+            );
         };
     },
 
@@ -165,7 +310,9 @@ let game = {
                 playersPaddlesData.playerTwoPaddleData.height,
                 playersPaddlesData.playerTwoPaddleData.defaultSpeedModifier,
                 playersPaddlesData.playerTwoPaddleData.increasedSpeedModifier,
-                playersPaddlesData.playerTwoPaddleData.speed
+                playersPaddlesData.playerTwoPaddleData.speed,
+                playersPaddlesData.playerTwoPaddleData.color,
+                playersPaddlesData.playerTwoPaddleData.strokeColor
             );
         };
 
@@ -177,7 +324,9 @@ let game = {
                 aiPaddlesData.aiTwoPaddleData.height,
                 aiPaddlesData.aiTwoPaddleData.defaultSpeedModifier,
                 aiPaddlesData.aiTwoPaddleData.increasedSpeedModifier,
-                aiPaddlesData.aiTwoPaddleData.speed
+                aiPaddlesData.aiTwoPaddleData.speed,
+                aiPaddlesData.aiTwoPaddleData.color,
+                aiPaddlesData.aiTwoPaddleData.strokeColor
             );
         };
 
@@ -190,7 +339,9 @@ let game = {
                     aiPaddlesData.aiOnePaddleData.height,
                     aiPaddlesData.aiOnePaddleData.defaultSpeedModifier,
                     aiPaddlesData.aiOnePaddleData.increasedSpeedModifier,
-                    aiPaddlesData.aiOnePaddleData.speed
+                    aiPaddlesData.aiOnePaddleData.speed,
+                    aiPaddlesData.aiOnePaddleData.color,
+                    aiPaddlesData.aiOnePaddleData.strokeColor,
                 );
             };
         };
@@ -207,17 +358,19 @@ let game = {
                 playersPaddlesData.playerTwoPaddleData.height,
                 playersPaddlesData.playerTwoPaddleData.defaultSpeedModifier,
                 playersPaddlesData.playerTwoPaddleData.increasedSpeedModifier,
-                playersPaddlesData.playerTwoPaddleData.speed
+                playersPaddlesData.playerTwoPaddleData.speed,
+                playersPaddlesData.playerTwoPaddleData.color,
+                playersPaddlesData.playerTwoPaddleData.strokeColor
             );
         };
 
         game.resetScore();
 
+        game.generateBalls(game.ballCountOption);
+
         controls.playersControls.reset([players.playerOne, players.playerTwo]);
         controls.aiControls.reset([ai.aiOne, ai.aiTwo]);
-        controls.ballsControls.reset([balls.ballOne]);
-
-        game.updateWinsInfoAndScoreText();
+        controls.ballsControls.reset(ballsArray);
 
         game.updateWinsInfoAndScoreText();
 
@@ -236,7 +389,7 @@ let game = {
 
         controls.playersControls.reset([players.playerOne, players.playerTwo]);
         controls.aiControls.reset([ai.aiOne, ai.aiTwo]);
-        controls.ballsControls.reset([balls.ballOne]);
+        controls.ballsControls.reset(ballsArray);
     },
 
     goToMainMenuFromGameoverScreen: function () {
@@ -245,7 +398,7 @@ let game = {
     },
 
     goToMainMenuFromMainframe: function () {
-        controls.ballsControls.freeze([balls.ballOne]);
+        controls.ballsControls.freeze(ballsArray);
 
         helper.changeDisplay('start-screen', 'flex');
         helper.changeDisplay('mainframe', 'none');
@@ -254,12 +407,12 @@ let game = {
     updateScore: function () {
         controls.playersControls.reset([players.playerOne, players.playerTwo]);
         controls.aiControls.reset([ai.aiOne, ai.aiTwo]);
-        controls.ballsControls.reset([balls.ballOne]);
+        controls.ballsControls.reset(ballsArray);
 
         game.updateWinsInfoAndScoreText();
 
-        if (game.aiWins >= (game.bestOfOption / 2) + 0.5 || game.playersWins >= (game.bestOfOption / 2) + 0.5) {
-            controls.ballsControls.freeze([balls.ballOne]);
+        if (game.aiWins >= (game.bestOfOption + 1) / 2 || game.playersWins >= (game.bestOfOption + 1) / 2) {
+            controls.ballsControls.freeze(ballsArray);
 
             helper.changeDisplay('mainframe', 'none');
             helper.changeDisplay('gameover-container', 'flex');
@@ -293,7 +446,7 @@ let game = {
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
-function Paddle(x, y, width, height, defaultSpeedModifier, increasedSpeedModifier, speed) {
+function Paddle(x, y, width, height, defaultSpeedModifier, increasedSpeedModifier, speed, color, strokeColor) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -301,6 +454,8 @@ function Paddle(x, y, width, height, defaultSpeedModifier, increasedSpeedModifie
     this.defaultSpeedModifier = defaultSpeedModifier;
     this.increasedSpeedModifier = increasedSpeedModifier;
     this.speed = speed;
+    this.color = color;
+    this.strokeColor = strokeColor;
 
     this.hasCollidedWith = function (ball) {
         let paddleLeftWall = this.x;
@@ -323,23 +478,27 @@ function Paddle(x, y, width, height, defaultSpeedModifier, increasedSpeedModifie
 
 let playersPaddlesData = {
     playerOnePaddleData: {
-        width: 10,
-        height: 125,
-        xPosition: 5,
+        width: 6,
+        height: 160,
+        xPosition: 3,
         yPosition: 500,
         defaultSpeedModifier: 0.5,
         increasedSpeedModifier: 0.7,
-        speed: 6
+        speed: 9,
+        color: helper.getRandomColor(),
+        strokeColor: helper.getRandomColor()
     },
 
     playerTwoPaddleData: {
-        width: 10,
-        height: 125,
-        xPosition: 5,
+        width: 6,
+        height: 160,
+        xPosition: 3,
         yPosition: 200,
         defaultSpeedModifier: 0.5,
         increasedSpeedModifier: 0.7,
-        speed: 6
+        speed: 9,
+        color: helper.getRandomColor(),
+        strokeColor: helper.getRandomColor()
     }
 };
 
@@ -351,7 +510,9 @@ let players = {
         playersPaddlesData.playerOnePaddleData.height,
         playersPaddlesData.playerOnePaddleData.defaultSpeedModifier,
         playersPaddlesData.playerOnePaddleData.increasedSpeedModifier,
-        playersPaddlesData.playerOnePaddleData.speed
+        playersPaddlesData.playerOnePaddleData.speed,
+        playersPaddlesData.playerOnePaddleData.color,
+        playersPaddlesData.playerOnePaddleData.strokeColor,
     ),
 
     playerTwo: null
@@ -359,23 +520,27 @@ let players = {
 
 let aiPaddlesData = {
     aiOnePaddleData: {
-        width: 10,
-        height: 125,
-        xPosition: 1585,
+        width: 6,
+        height: 160,
+        xPosition: 1591,
         yPosition: 500,
         defaultSpeedModifier: 0.5,
         increasedSpeedModifier: 0.7,
-        speed: 6
+        speed: 9,
+        color: helper.getRandomColor(),
+        strokeColor: helper.getRandomColor()
     },
 
     aiTwoPaddleData: {
-        width: 10,
-        height: 125,
-        xPosition: 1585,
+        width: 6,
+        height: 160,
+        xPosition: 1591,
         yPosition: 200,
         defaultSpeedModifier: 0.5,
         increasedSpeedModifier: 0.7,
-        speed: 6
+        speed: 9,
+        color: helper.getRandomColor(),
+        strokeColor: helper.getRandomColor()
     }
 };
 
@@ -387,7 +552,9 @@ let ai = {
         aiPaddlesData.aiOnePaddleData.height,
         aiPaddlesData.aiOnePaddleData.defaultSpeedModifier,
         aiPaddlesData.aiOnePaddleData.increasedSpeedModifier,
-        aiPaddlesData.aiOnePaddleData.speed
+        aiPaddlesData.aiOnePaddleData.speed,
+        aiPaddlesData.aiOnePaddleData.color,
+        aiPaddlesData.aiOnePaddleData.strokeColor
     ),
 
     aiTwo: null
@@ -395,12 +562,14 @@ let ai = {
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
-function Ball(x, y, radius, xSpeed, ySpeed) {
+function Ball(x, y, radius, xSpeed, ySpeed, color, strokeColor) {
     this.x = x;
     this.y = y;
     this.radius = radius;
     this.xSpeed = xSpeed;
     this.ySpeed = ySpeed;
+    this.color = color;
+    this.strokeColor = strokeColor;
 
     this.reverseX = function () {
         this.xSpeed *= -1;
@@ -419,6 +588,12 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
             nextValue *= -1;
         };
 
+        if (nextValue >= 4.3) {
+            nextValue = 4.2;
+        } else if (nextValue <= -4.3) {
+            nextValue = -4.2;
+        };
+
         this.xSpeed = nextValue;
     };
 
@@ -426,6 +601,12 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
         modification = this.ySpeed < 0 ? modification * -1 : modification;
 
         this.ySpeed += modification;
+
+        if (this.ySpeed >= 14.3) {
+            this.ySpeed = 14.2;
+        } else if (this.ySpeed <= -14.3) {
+            this.ySpeed = -14.2;
+        };
     };
 
     this.increaseSpeed = function (keyOne, keyTwo, player) {
@@ -453,7 +634,7 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
             this.modifyXSpeedBy(xSpeedModificator);
             this.modifyYSpeedBy(ySpeedModificator);
         };
-    }
+    };
 
     this.updateBall = function () {
         this.x += this.xSpeed;
@@ -464,12 +645,12 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
             game.updateScore();
         };
 
-        if (this.x > canvasWidth) {
+        if (this.x > canvas.width) {
             game.playersWins++;
             game.updateScore();
         };
 
-        if (this.y <= 0 || this.y >= canvasHeight) {
+        if (this.y <= 10 || this.y >= canvas.height - 10) {
             this.reverseY();
         };
 
@@ -516,23 +697,12 @@ function Ball(x, y, radius, xSpeed, ySpeed) {
     };
 };
 
-let ballOneData = {
-    xPosition: canvasWidth / 2,
-    yPosition: canvasHeight / 2,
-    radius: 6,
-    xSpeed: 3,
-    ySpeed: helper.getTrueRandomNumber(-3, 3)
+let ballData = {
+    xPosition: canvas.width / 2,
+    yPosition: canvas.height / 2,
 };
 
-let balls = {
-    ballOne: new Ball(
-        ballOneData.xPosition,
-        ballOneData.yPosition,
-        ballOneData.radius,
-        ballOneData.xSpeed,
-        ballOneData.ySpeed
-    )
-};
+let ballsArray = [];
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
@@ -550,7 +720,7 @@ let controls = {
             };
 
             nextY = nextY < 0 ? 0 : nextY;
-            nextY = nextY + player.height > canvasHeight ? canvasHeight - player.height : nextY;
+            nextY = nextY + player.height > canvas.height ? canvas.height - player.height : nextY;
             player.y = nextY;
         },
 
@@ -567,7 +737,7 @@ let controls = {
 
         reset: function (players) {
             if (game.playersModeOption === 11 || game.playersModeOption === 12) {
-                players[0].y = (canvasHeight - playersPaddlesData.playerOnePaddleData.height) / 2;
+                players[0].y = (canvas.height - playersPaddlesData.playerOnePaddleData.height) / 2;
             } else if (game.playersModeOption === 21 || game.playersModeOption === 22) {
                 players[0].y = playersPaddlesData.playerOnePaddleData.yPosition;
 
@@ -575,8 +745,8 @@ let controls = {
                     players[1].y = playersPaddlesData.playerTwoPaddleData.yPosition;
                 };
             } else if (game.playersModeOption === 33) {
-                players[0].y = (canvasHeight - playersPaddlesData.playerOnePaddleData.height) / 2;
-                players[1].y = (canvasHeight - playersPaddlesData.playerTwoPaddleData.height) / 2;
+                players[0].y = (canvas.height - playersPaddlesData.playerOnePaddleData.height) / 2;
+                players[1].y = (canvas.height - playersPaddlesData.playerTwoPaddleData.height) / 2;
             };
         }
     },
@@ -594,56 +764,170 @@ let controls = {
             };
 
             nextY = nextY < 0 ? 0 : nextY;
-            nextY = nextY + ai.height > canvasHeight ? canvasHeight - ai.height : nextY;
+            nextY = nextY + ai.height > canvas.height ? canvas.height - ai.height : nextY;
             ai.y = nextY;
         },
 
-        updateAiControlsOne: function (ai, ball) {
+        findTheBallThatHasMinimumDistanceToRightSide: function (ballsArray) {
+            let distancesFromBallsToRightSide = [];
+
+            for (let i = 0; i < ballsArray.length; i++) {
+                distancesFromBallsToRightSide[i] = canvas.width - ballsArray[i].x;
+            };
+
+            let minimumDistanceToRightSide = canvas.width;
+            let ballThatHasMinimumDistanceToRightSide;
+
+            for (let i = 0; i < distancesFromBallsToRightSide.length; i++) {
+                if (distancesFromBallsToRightSide[i] < minimumDistanceToRightSide) {
+                    minimumDistanceToRightSide = distancesFromBallsToRightSide[i];
+                    ballThatHasMinimumDistanceToRightSide = i;
+                };
+            };
+
+            return ballThatHasMinimumDistanceToRightSide;
+        },
+
+        findTheBallThatHasMinimumDistanceToAI: function (ballsArray, ai) {
+            let distancesFromBallsToAI = [];
+
+            for (let i = 0; i < ballsArray.length; i++) {
+                distancesFromBallsToAI[i] = Math.sqrt(Math.pow((ai.x - ballsArray[i].x), 2) + Math.pow((ai.y + (ai.height / 2) - ballsArray[i].y), 2));
+            };
+
+            let minimumDistanceToAI = canvas.width;
+            let ballThatHasMinimumDistanceToAI;
+
+            for (let i = 0; i < distancesFromBallsToAI.length; i++) {
+                if (distancesFromBallsToAI[i] < minimumDistanceToAI) {
+                    minimumDistanceToAI = distancesFromBallsToAI[i];
+                    ballThatHasMinimumDistanceToAI = i;
+                };
+            };
+
+            return ballThatHasMinimumDistanceToAI;
+        },
+
+        updateAiControlsOne: function (ai) {
             let aiMiddle = ai.y + (ai.height / 2);
 
-            if (aiMiddle < ball.y) {
+            let ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSide(ballsArray);
+            // let ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToAI(ballsArray, ai);
+            // let ballToControl = controls.aiControls.findTheBallThatHasSeconsMinimumDistanceToRightSide(ballsArray);
+            // let ballToControl = controls.aiControls.findTheBallThatHasSecondMinimumDistanceToAI(ballsArray, ai);
+            console.log('ai1 ' + ballToControl);
+
+            if (!ballToControl) {
+                ballToControl = 0;
+            };
+
+            if (aiMiddle < ballsArray[ballToControl].y) {
                 controls.aiControls.move('40', ai);
             };
 
-            if (aiMiddle > ball.y) {
+            if (aiMiddle > ballsArray[ballToControl].y) {
                 controls.aiControls.move('38', ai);
             };
 
-            if (aiMiddle === ball.y) {
+            if (aiMiddle === ballsArray[ballToControl].y) {
                 ai.defaultSpeedModifier = aiPaddlesData.aiOnePaddleData.defaultSpeedModifier;
             };
         },
 
-        updateAiControlsTwo: function (aiOne, aiTwo, ball) {
+        findTheBallThatHasSeconsMinimumDistanceToRightSide: function (ballsArray) {
+            let distancesFromBallsToRightSide = [];
+
+            for (let i = 0; i < ballsArray.length; i++) {
+                distancesFromBallsToRightSide[i] = canvas.width - ballsArray[i].x;
+            };
+
+            let sortedDistancesFromBallsToRightSide = helper.sortArray(distancesFromBallsToRightSide);
+            let ballThatHasSecondMinimumDistanceToRightSide;
+
+            for (let i = 0; i < distancesFromBallsToRightSide.length; i++) {
+                if (distancesFromBallsToRightSide[i] === sortedDistancesFromBallsToRightSide[1]) {
+                    ballThatHasSecondMinimumDistanceToRightSide = i;
+                };
+            };
+
+            return ballThatHasSecondMinimumDistanceToRightSide;
+        },
+
+        findTheBallThatHasSecondMinimumDistanceToAI: function (ballsArray, ai) {
+            let distancesFromBallsToAI = [];
+
+            for (let i = 0; i < ballsArray.length; i++) {
+                distancesFromBallsToAI[i] = Math.sqrt(Math.pow((ai.x - ballsArray[i].x), 2) + Math.pow((ai.y + (ai.height / 2) - ballsArray[i].y), 2));
+            };
+
+            let sortedDistancesFromBallsToAI = helper.sortArray(distancesFromBallsToAI);
+            let ballThatHasSecondMinimumDistanceToAI;
+
+            for (let i = 0; i < distancesFromBallsToAI.length; i++) {
+                if (distancesFromBallsToAI[i] === sortedDistancesFromBallsToAI[1]) {
+                    ballThatHasSecondMinimumDistanceToAI = i;
+                };
+            };
+
+            return ballThatHasSecondMinimumDistanceToAI;
+        },
+
+        updateAiControlsTwo: function (aiOne, aiTwo) {
             let aiMiddle = aiOne.y + (aiOne.height / 2);
 
-            if (aiMiddle < ball.y) {
-                controls.aiControls.move('40', aiOne);
-            };
+            if (game.ballCountOption > 1) {
+                // let ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSide(ballsArray);
+                // let ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToAI(ballsArray, aiOne);
+                let ballToControl = controls.aiControls.findTheBallThatHasSeconsMinimumDistanceToRightSide(ballsArray);
+                // let ballToControl = controls.aiControls.findTheBallThatHasSecondMinimumDistanceToAI(ballsArray, aiOne);
+                console.log('ai2 ' + ballToControl);
 
-            if (aiMiddle > ball.y) {
-                controls.aiControls.move('38', aiOne);
-            };
+                if (!ballToControl) {
+                    ballToControl = 1;
+                };
 
-            let aiTwoBottom = aiOne.y + aiOne.height;
-            let aiOneTop = aiTwo.y;
+                if (aiMiddle < ballsArray[ballToControl].y) {
+                    controls.aiControls.move('40', aiOne);
+                };
 
-            if ((aiOneTop - aiTwoBottom) <= 150) {
-                controls.aiControls.move('38', aiOne);
-            };
+                if (aiMiddle > ballsArray[ballToControl].y) {
+                    controls.aiControls.move('38', aiOne);
+                };
 
-            if ((aiOneTop - aiTwoBottom) <= (-1 * aiOne.speed)) {
-                controls.aiControls.move('40', aiTwo);
-            };
+                if (aiMiddle === ballsArray[ballToControl].y) {
+                    aiOne.defaultSpeedModifier = aiPaddlesData.aiTwoPaddleData.defaultSpeedModifier;
+                };
 
-            if (aiMiddle === ball.y) {
-                aiOne.defaultSpeedModifier = aiPaddlesData.aiTwoPaddleData.defaultSpeedModifier;
+            } else if (game.ballCountOption === 1) {
+
+                if (aiMiddle < ballsArray[0].y) {
+                    controls.aiControls.move('40', aiOne);
+                };
+
+                if (aiMiddle > ballsArray[0].y) {
+                    controls.aiControls.move('38', aiOne);
+                };
+
+                if (aiMiddle === ballsArray[0].y) {
+                    aiOne.defaultSpeedModifier = aiPaddlesData.aiTwoPaddleData.defaultSpeedModifier;
+                };
+
+                let aiTwoBottom = aiOne.y + aiOne.height;
+                let aiOneTop = aiTwo.y;
+
+                if ((aiOneTop - aiTwoBottom) <= 150) {
+                    controls.aiControls.move('38', aiOne);
+                };
+
+                if ((aiOneTop - aiTwoBottom) <= (-1 * aiOne.speed)) {
+                    controls.aiControls.move('40', aiTwo);
+                };
             };
         },
 
         reset: function (ai) {
             if (game.playersModeOption === 11 || game.playersModeOption === 21) {
-                ai[0].y = (canvasHeight - aiPaddlesData.aiOnePaddleData.height) / 2;
+                ai[0].y = (canvas.height - aiPaddlesData.aiOnePaddleData.height) / 2;
             } else if (game.playersModeOption === 12 || game.playersModeOption === 22) {
                 ai[0].y = aiPaddlesData.aiOnePaddleData.yPosition;
 
@@ -657,10 +941,13 @@ let controls = {
     ballsControls: {
         reset: function (balls) {
             for (let i = 0; i < balls.length; i++) {
-                balls[i].x = ballOneData.xPosition;
-                balls[i].y = ballOneData.yPosition;
-                balls[i].xSpeed = ballOneData.xSpeed;
-                balls[i].ySpeed = helper.getTrueRandomNumber(-3, 3);
+                balls[i].x = ballData.xPosition + Math.random();
+                balls[i].y = ballData.yPosition + Math.random();
+                balls[i].radius = helper.getRandomNumberFromRange(7, 10);
+                balls[i].xSpeed = helper.getRandomNumberFromLowerBoundToMinusOneOrFromOneToUpperBound(-3, 3);
+                balls[i].ySpeed = helper.getRandomNumberFromLowerBoundToZeroOrFromZeroToUpperBound(-3, 3);
+                balls[i].color = helper.getRandomColor();
+                balls[i].strokeColor = helper.getRandomColor();
             };
         },
 
@@ -677,40 +964,54 @@ let controls = {
 
 let render = {
     renderField: function () {
-        ctx.fillStyle = '#163728';
-        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        ctx.fillStyle = 'rgba(22, 55, 40, 0.5)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
     },
 
-    renderPaddle: function (paddle, color) {
-        ctx.fillStyle = color;
-        ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
-    },
-
-    renderBall: function (ball, color) {
+    renderPaddle: function (paddle, color, strokeColor) {
         ctx.beginPath();
-        ctx.arc(ball.x, ball.y, ball.radius, 0, 2 * Math.PI, false);
+        ctx.rect(paddle.x, paddle.y, paddle.width, paddle.height);
+
         ctx.fillStyle = color;
         ctx.fill();
+
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = strokeColor;
+        ctx.stroke();
     },
 
-    draw: function (paddles, balls, paddlesColors, ballsColors) {
+    renderBall: function (ball, color, strokeColor) {
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, 2 * Math.PI, false);
+
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = strokeColor;
+        ctx.stroke();
+    },
+
+    draw: function (paddles, balls, paddlesColors, paddlesStrokeColors) {
         ctx.globalCompositeOperation = 'source-over';
         this.renderField();
 
         for (let i = 0; i < paddles.length; i++) {
             if (paddles[i]) {
-                ctx.globalCompositeOperation = 'exclusion';
-                this.renderPaddle(paddles[i], paddlesColors[i]);
+                ctx.globalCompositeOperation = 'source-over';
+                this.renderPaddle(paddles[i], paddlesColors[i], paddlesStrokeColors[i]);
             };
         };
 
         for (let i = 0; i < balls.length; i++) {
             if (balls[i]) {
                 ctx.globalCompositeOperation = 'source-over';
-                this.renderBall(balls[i], ballsColors[i]);
+                this.renderBall(balls[i], balls[i].color, balls[i].strokeColor);
+
+                // ctx.font = '30px serif';
+                // ctx.fillStyle = 'white';
+                // ctx.fillText(i, balls[i].x, balls[i].y);
             };
         };
     }
 };
-
-/*-------------------------------------------------------------------------------------------------------------*/

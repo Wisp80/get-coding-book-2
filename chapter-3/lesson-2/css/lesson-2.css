@@ -51,14 +51,16 @@ body {
 /*-------------------------------------------------------------------------------------------------------------*/
 
 .main-settings-container {
-    width: 80%;
+    width: 60%;
     display: flex;
     flex-direction: row;
     justify-content: space-around;
+    align-items: flex-start;
 }
 
 .players-mode-container,
-.best-of-mode-container {
+.best-of-mode-container,
+.ball-count-container {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
@@ -66,7 +68,8 @@ body {
 }
 
 .players-mode-container-text,
-.best-of-mode-container-text {
+.best-of-mode-container-text,
+.ball-count-container-text {
     font-size: 24px;
 }
 
@@ -77,13 +80,44 @@ body {
 .one-player-vs-one-player-button,
 .best-of-one-button,
 .best-of-three-button,
-.best-of-five-button {
+.best-of-five-button,
+.best-of-seven-button,
+.best-of-nine-button {
     font-family: Calibri;
     font-size: 16px;
     margin-top: 12px;
     margin-bottom: 12px;
     width: 150px;
     height: 30px;
+}
+
+.ball-count-buttons-container {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.decrease-ball-count-button,
+.increase-ball-count-button {
+    font-family: Calibri;
+    font-size: 24px;
+    width: 50px;
+    height: 80px;
+}
+
+.ball-count {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-family: Calibri;
+    font-size: 50px;
+    color: rgb(75, 194, 75);
+    margin-right: 20px;
+    margin-left: 20px;
+    width: 50px;
+    height: 80px;
 }
 
 .highlighted-button {
