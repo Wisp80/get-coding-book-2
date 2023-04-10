@@ -109,17 +109,13 @@ let game = {
 
     tick: function () {
         window.clearTimeout(game.tickTimeout);
-
         game.prepareDataForNextTick();
-
         window.requestAnimationFrame(game.renderPreparedDataForNextTick);
-
         game.tickTimeout = window.setTimeout('game.tick()', game.tickRate);
     },
 
     prepareDataForNextTick: function () {
         controls.playersControls.initializeWatchPlayersControls();
-
         controls.playersControls.updatePlayersControls(players.playerOne, '38', '40');
 
         if (game.playersModeOption === 21 || game.playersModeOption === 22 || game.playersModeOption === 33) {
@@ -191,90 +187,10 @@ let game = {
         };
     },
 
-    chooseBestOfOption: function (el) {
-        helper.highlightElement(el, 'best-of-mode-container');
-
-        switch (el.innerText) {
-            case 'Best of 1':
-                game.bestOfOption = 1;
-                break;
-
-            case 'Best of 3':
-                game.bestOfOption = 3;
-                break;
-
-            case 'Best of 5':
-                game.bestOfOption = 5;
-                break;
-
-            case 'Best of 7':
-                game.bestOfOption = 7;
-                break;
-
-            case 'Best of 9':
-                game.bestOfOption = 9;
-                break;
-
-            default:
-                break;
-        };
-    },
-
-    specifyBallCountOption: function (el) {
-        if (el.innerHTML === '+1') {
-            game.ballCountOption++;
-        } else if (el.innerHTML === '-1') {
-            game.ballCountOption--;
-        };
-
-        if (game.ballCountOption <= 0) {
-            game.ballCountOption = 1;
-        } else if (game.ballCountOption >= 11) {
-            game.ballCountOption = 10;
-        };
-
-        document.getElementsByClassName('ball-count')[0].innerHTML = game.ballCountOption;
-    },
-
-    choosePlayersModeOption: function (el) {
-        helper.highlightElement(el, 'players-mode-container');
-
-        switch (el.innerText) {
-            case '1P vs 1AI':
-                game.playersModeOption = 11;
-                break;
-
-            case '1P vs 2AI':
-                game.playersModeOption = 12;
-                break;
-
-            case '2P vs 1AI':
-                game.playersModeOption = 21;
-                break;
-
-            case '2P vs 2AI':
-                game.playersModeOption = 22;
-                break;
-
-            case 'PvP':
-                game.playersModeOption = 33;
-                break;
-
-            default:
-                break;
-        };
-    },
-
-    enableDisablePlayButton: function () {
-        for (let i = 0; i < document.getElementsByClassName('players-mode-container')[0].children.length; i++) {
-            if (document.getElementsByClassName('players-mode-container')[0].children[i].classList.contains('highlighted-button')) {
-                for (let i = 0; i < document.getElementsByClassName('best-of-mode-container')[0].children.length; i++) {
-                    if (document.getElementsByClassName('best-of-mode-container')[0].children[i].classList.contains('highlighted-button')) {
-                        document.getElementsByClassName('play-button')[0].disabled = false;
-                    };
-                };
-            };
-        };
+    resetPaddlesAndBalls: function () {
+        controls.playersControls.reset([players.playerOne, players.playerTwo]);
+        controls.aiControls.reset([ai.aiOne, ai.aiTwo]);
+        controls.ballsControls.reset(ballsArray);
     },
 
     generateBalls: function (count) {
@@ -365,31 +281,133 @@ let game = {
         };
 
         game.resetScore();
-
         game.generateBalls(game.ballCountOption);
-
-        controls.playersControls.reset([players.playerOne, players.playerTwo]);
-        controls.aiControls.reset([ai.aiOne, ai.aiTwo]);
-        controls.ballsControls.reset(ballsArray);
-
-        game.updateWinsInfoAndScoreText();
-
+        game.resetPaddlesAndBalls();
+        ui.updateWinsInfoAndScoreText();
         helper.changeDisplay('start-screen', 'none');
         helper.changeDisplay('mainframe', 'flex');
-
         game.tick();
+    },
+
+    defineWinner: function () {
+        if (game.aiWins >= (game.bestOfOption + 1) / 2 || game.playersWins >= (game.bestOfOption + 1) / 2) {
+            controls.ballsControls.freeze(ballsArray);
+
+            helper.changeDisplay('mainframe', 'none');
+            helper.changeDisplay('gameover-container', 'flex');
+            ui.updateWinsInfoAndScoreText();
+            game.resetScore();
+
+            if (game.playersModeOption === 33) {
+                document.getElementsByClassName('wins-info')[0].innerHTML = 'Player One ' + game.playersWins + ' : ' + game.aiWins + ' Player Two';
+            } else {
+                document.getElementsByClassName('wins-info')[0].innerHTML = 'You ' + game.playersWins + ' : ' + game.aiWins + ' AI';
+            };
+        };
+    },
+
+    resetScore: function () {
+        game.aiWins = 0;
+        game.playersWins = 0;
+    }
+};
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
+let ui = {
+    chooseBestOfOption: function (el) {
+        helper.highlightElement(el, 'best-of-mode-container');
+
+        switch (el.innerText) {
+            case 'Best of 1':
+                game.bestOfOption = 1;
+                break;
+
+            case 'Best of 3':
+                game.bestOfOption = 3;
+                break;
+
+            case 'Best of 5':
+                game.bestOfOption = 5;
+                break;
+
+            case 'Best of 7':
+                game.bestOfOption = 7;
+                break;
+
+            case 'Best of 9':
+                game.bestOfOption = 9;
+                break;
+
+            default:
+                break;
+        };
+    },
+
+    specifyBallCountOption: function (el) {
+        if (el.innerHTML === '+1') {
+            game.ballCountOption++;
+        } else if (el.innerHTML === '-1') {
+            game.ballCountOption--;
+        };
+
+        if (game.ballCountOption <= 0) {
+            game.ballCountOption = 1;
+        } else if (game.ballCountOption >= 11) {
+            game.ballCountOption = 10;
+        };
+
+        document.getElementsByClassName('ball-count')[0].innerHTML = game.ballCountOption;
+    },
+
+    choosePlayersModeOption: function (el) {
+        helper.highlightElement(el, 'players-mode-container');
+
+        switch (el.innerText) {
+            case '1P vs 1AI':
+                game.playersModeOption = 11;
+                break;
+
+            case '1P vs 2AI':
+                game.playersModeOption = 12;
+                break;
+
+            case '2P vs 1AI':
+                game.playersModeOption = 21;
+                break;
+
+            case '2P vs 2AI':
+                game.playersModeOption = 22;
+                break;
+
+            case 'PvP':
+                game.playersModeOption = 33;
+                break;
+
+            default:
+                break;
+        };
+    },
+
+    enableDisablePlayButton: function () {
+        for (let i = 0; i < document.getElementsByClassName('players-mode-container')[0].children.length; i++) {
+            if (document.getElementsByClassName('players-mode-container')[0].children[i].classList.contains('highlighted-button')) {
+                for (let i = 0; i < document.getElementsByClassName('best-of-mode-container')[0].children.length; i++) {
+                    if (document.getElementsByClassName('best-of-mode-container')[0].children[i].classList.contains('highlighted-button')) {
+                        document.getElementsByClassName('play-button')[0].disabled = false;
+                    };
+                };
+            };
+        };
     },
 
     restart: function () {
         game.resetScore();
-        game.updateWinsInfoAndScoreText();
+        ui.updateWinsInfoAndScoreText();
+        game.resetPaddlesAndBalls();
 
         helper.changeDisplay('gameover-container', 'none');
         helper.changeDisplay('mainframe', 'flex');
-
-        controls.playersControls.reset([players.playerOne, players.playerTwo]);
-        controls.aiControls.reset([ai.aiOne, ai.aiTwo]);
-        controls.ballsControls.reset(ballsArray);
     },
 
     goToMainMenuFromGameoverScreen: function () {
@@ -405,27 +423,9 @@ let game = {
     },
 
     updateScore: function () {
-        controls.playersControls.reset([players.playerOne, players.playerTwo]);
-        controls.aiControls.reset([ai.aiOne, ai.aiTwo]);
-        controls.ballsControls.reset(ballsArray);
-
-        game.updateWinsInfoAndScoreText();
-
-        if (game.aiWins >= (game.bestOfOption + 1) / 2 || game.playersWins >= (game.bestOfOption + 1) / 2) {
-            controls.ballsControls.freeze(ballsArray);
-
-            helper.changeDisplay('mainframe', 'none');
-            helper.changeDisplay('gameover-container', 'flex');
-
-            game.updateWinsInfoAndScoreText();
-            game.resetScore();
-
-            if (game.playersModeOption === 33) {
-                document.getElementsByClassName('wins-info')[0].innerHTML = 'Player One ' + game.playersWins + ' : ' + game.aiWins + ' Player Two';
-            } else {
-                document.getElementsByClassName('wins-info')[0].innerHTML = 'You ' + game.playersWins + ' : ' + game.aiWins + ' AI';
-            };
-        };
+        game.resetPaddlesAndBalls();
+        ui.updateWinsInfoAndScoreText();
+        game.defineWinner();
     },
 
     updateWinsInfoAndScoreText: function () {
@@ -437,12 +437,7 @@ let game = {
             document.getElementsByClassName('score-text')[0].innerHTML = 'You ' + game.playersWins + ' : ' + game.aiWins + ' AI';
         };
     },
-
-    resetScore: function () {
-        game.aiWins = 0;
-        game.playersWins = 0;
-    }
-};
+}
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
@@ -642,12 +637,12 @@ function Ball(x, y, radius, xSpeed, ySpeed, color, strokeColor) {
 
         if (this.x < 0) {
             game.aiWins++;
-            game.updateScore();
+            ui.updateScore();
         };
 
         if (this.x > canvas.width) {
             game.playersWins++;
-            game.updateScore();
+            ui.updateScore();
         };
 
         if (this.y <= 10 || this.y >= canvas.height - 10) {

@@ -21,19 +21,19 @@
                     <p class='players-mode-container-text'>Players mode</p>
 
                     <button class='one-player-vs-one-ai-button'
-                        onclick='game.choosePlayersModeOption(this); game.enableDisablePlayButton();'>1P vs
+                        onclick='ui.choosePlayersModeOption(this); ui.enableDisablePlayButton();'>1P vs
                         1AI</button>
                     <button class='one-player-vs-two-ai-button'
-                        onclick='game.choosePlayersModeOption(this); game.enableDisablePlayButton();'>1P vs
+                        onclick='ui.choosePlayersModeOption(this); ui.enableDisablePlayButton();'>1P vs
                         2AI</button>
                     <button class='two-players-vs-one-ai-button'
-                        onclick='game.choosePlayersModeOption(this); game.enableDisablePlayButton();'>2P vs
+                        onclick='ui.choosePlayersModeOption(this); ui.enableDisablePlayButton();'>2P vs
                         1AI</button>
                     <button class='two-players-vs-two-ai-button'
-                        onclick='game.choosePlayersModeOption(this); game.enableDisablePlayButton();'>2P vs
+                        onclick='ui.choosePlayersModeOption(this); ui.enableDisablePlayButton();'>2P vs
                         2AI</button>
                     <button class='one-player-vs-one-player-button'
-                        onclick='game.choosePlayersModeOption(this); game.enableDisablePlayButton();'>PvP</button>
+                        onclick='ui.choosePlayersModeOption(this); ui.enableDisablePlayButton();'>PvP</button>
                 </div>
 
                 <div class='ball-count-container'>
@@ -41,10 +41,10 @@
 
                     <div class='ball-count-buttons-container'>
                         <button class='decrease-ball-count-button'
-                            onclick='game.specifyBallCountOption(this)'>-1</button>
+                            onclick='ui.specifyBallCountOption(this)'>-1</button>
                         <div class='ball-count'>1</div>
                         <button class='increase-ball-count-button'
-                            onclick='game.specifyBallCountOption(this)'>+1</button>
+                            onclick='ui.specifyBallCountOption(this)'>+1</button>
                     </div>
                 </div>
 
@@ -52,15 +52,15 @@
                     <p class='best-of-mode-container-text'>Best of</p>
 
                     <button class='best-of-one-button'
-                        onclick='game.chooseBestOfOption(this); game.enableDisablePlayButton();'>Best of 1</button>
+                        onclick='ui.chooseBestOfOption(this); ui.enableDisablePlayButton();'>Best of 1</button>
                     <button class='best-of-three-button'
-                        onclick='game.chooseBestOfOption(this); game.enableDisablePlayButton();'>Best of 3</button>
+                        onclick='ui.chooseBestOfOption(this); ui.enableDisablePlayButton();'>Best of 3</button>
                     <button class='best-of-five-button'
-                        onclick='game.chooseBestOfOption(this); game.enableDisablePlayButton();'>Best of 5</button>
+                        onclick='ui.chooseBestOfOption(this); ui.enableDisablePlayButton();'>Best of 5</button>
                     <button class='best-of-seven-button'
-                        onclick='game.chooseBestOfOption(this); game.enableDisablePlayButton();'>Best of 7</button>
+                        onclick='ui.chooseBestOfOption(this); ui.enableDisablePlayButton();'>Best of 7</button>
                     <button class='best-of-nine-button'
-                        onclick='game.chooseBestOfOption(this); game.enableDisablePlayButton();'>Best of 9</button>
+                        onclick='ui.chooseBestOfOption(this); ui.enableDisablePlayButton();'>Best of 9</button>
                 </div>
             </div>
 
@@ -75,8 +75,8 @@
             <div class='wins-info'></div>
 
             <div class='mainframe-menu-buttons-container'>
-                <button class='mainframe-restart-button' onclick='game.restart()'>Restart</button>
-                <button class='mainframe-go-to-menu-button' onclick='game.goToMainMenuFromMainframe()'>Menu</button>
+                <button class='mainframe-restart-button' onclick='ui.restart()'>Restart</button>
+                <button class='mainframe-go-to-menu-button' onclick='ui.goToMainMenuFromMainframe()'>Menu</button>
             </div>
         </div>
 
@@ -86,8 +86,8 @@
             <div class='score-text'></div>
 
             <div class='gameover-buttons-container'>
-                <button class='restart-button' onclick='game.restart()'>Restart</button>
-                <button class='go-to-menu-button' onclick='game.goToMainMenuFromGameoverScreen()'>Menu</button>
+                <button class='restart-button' onclick='ui.restart()'>Restart</button>
+                <button class='go-to-menu-button' onclick='ui.goToMainMenuFromGameoverScreen()'>Menu</button>
             </div>
         </div>
     </div>
