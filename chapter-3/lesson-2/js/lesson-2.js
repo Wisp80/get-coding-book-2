@@ -286,6 +286,7 @@ let game = {
         ui.updateWinsInfoAndScoreText();
         helper.changeDisplay('start-screen', 'none');
         helper.changeDisplay('mainframe', 'flex');
+        audio.playSound(audio.backgroundMusic);
         game.tick();
     },
 
@@ -294,6 +295,7 @@ let game = {
             controls.ballsControls.freeze(ballsArray);
 
             helper.changeDisplay('mainframe', 'none');
+            audio.pauseSound(audio.backgroundMusic);
             helper.changeDisplay('gameover-container', 'flex');
             ui.updateWinsInfoAndScoreText();
             game.resetScore();
@@ -408,6 +410,7 @@ let ui = {
 
         helper.changeDisplay('gameover-container', 'none');
         helper.changeDisplay('mainframe', 'flex');
+        audio.playSound(audio.backgroundMusic);
     },
 
     goToMainMenuFromGameoverScreen: function () {
@@ -420,6 +423,7 @@ let ui = {
 
         helper.changeDisplay('start-screen', 'flex');
         helper.changeDisplay('mainframe', 'none');
+        audio.pauseSound(audio.backgroundMusic);
     },
 
     updateScore: function () {
@@ -617,12 +621,16 @@ function Ball(x, y, radius, xSpeed, ySpeed, color, strokeColor) {
         let ySpeedModificator;
 
         if (trueControlKeysPressed > 0) {
+            audio.playSound(audio.generateIncreasedHitSound());
+
             xSpeedModificator = player.increasedSpeedModifier;
             ySpeedModificator = player.increasedSpeedModifier;
 
             this.modifyXSpeedBy(xSpeedModificator);
             this.modifyYSpeedBy(ySpeedModificator);
         } else {
+            audio.playSound(audio.generateDefaultHitSound());
+
             xSpeedModificator = player.defaultSpeedModifier;
             ySpeedModificator = player.defaultSpeedModifier;
 
@@ -637,11 +645,39 @@ function Ball(x, y, radius, xSpeed, ySpeed, color, strokeColor) {
 
         if (this.x < 0) {
             game.aiWins++;
+
+            if (game.aiWins >= (game.bestOfOption + 1) / 2) {
+                if (game.playersModeOption === 33) {
+                    audio.playSound(audio.generateWinSound());
+                } else {
+                    audio.playSound(audio.generateLoseSound());
+                };
+            } else if (game.playersWins >= (game.bestOfOption + 1) / 2) {
+                audio.playSound(audio.generateWinSound());
+            } else {
+                console.log('0');
+                audio.playSound(audio.generateScoreSound());
+            };
+
             ui.updateScore();
         };
 
         if (this.x > canvas.width) {
             game.playersWins++;
+
+            if (game.aiWins >= (game.bestOfOption + 1) / 2) {
+                if (game.playersModeOption === 33) {
+                    audio.playSound(audio.generateWinSound());
+                } else {
+                    audio.playSound(audio.generateLoseSound());
+                };
+            } else if (game.playersWins >= (game.bestOfOption + 1) / 2) {
+                audio.playSound(audio.generateWinSound());
+            } else {
+                console.log('0');
+                audio.playSound(audio.generateScoreSound());
+            };
+
             ui.updateScore();
         };
 
@@ -681,11 +717,23 @@ function Ball(x, y, radius, xSpeed, ySpeed, color, strokeColor) {
         };
 
         if (collidedWithAiOne) {
+            if (ai.aiOne.defaultSpeedModifier === 0.5) {
+                audio.playSound(audio.generateDefaultHitSound());
+            } else {
+                audio.playSound(audio.generateIncreasedHitSound());
+            };
+
             this.modifyXSpeedBy(ai.aiOne.defaultSpeedModifier);
             this.modifyYSpeedBy(ai.aiOne.defaultSpeedModifier);
         };
 
         if (collidedWithAiTwo) {
+            if (ai.aiTwo.defaultSpeedModifier === 0.5) {
+                audio.playSound(audio.generateDefaultHitSound());
+            } else {
+                audio.playSound(audio.generateIncreasedHitSound());
+            };
+
             this.modifyXSpeedBy(ai.aiTwo.defaultSpeedModifier);
             this.modifyYSpeedBy(ai.aiTwo.defaultSpeedModifier);
         };
@@ -810,7 +858,7 @@ let controls = {
             // let ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToAI(ballsArray, ai);
             // let ballToControl = controls.aiControls.findTheBallThatHasSeconsMinimumDistanceToRightSide(ballsArray);
             // let ballToControl = controls.aiControls.findTheBallThatHasSecondMinimumDistanceToAI(ballsArray, ai);
-            console.log('ai1 ' + ballToControl);
+            // console.log('ai1 ' + ballToControl);
 
             if (!ballToControl) {
                 ballToControl = 0;
@@ -875,7 +923,7 @@ let controls = {
                 // let ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToAI(ballsArray, aiOne);
                 let ballToControl = controls.aiControls.findTheBallThatHasSeconsMinimumDistanceToRightSide(ballsArray);
                 // let ballToControl = controls.aiControls.findTheBallThatHasSecondMinimumDistanceToAI(ballsArray, aiOne);
-                console.log('ai2 ' + ballToControl);
+                // console.log('ai2 ' + ballToControl);
 
                 if (!ballToControl) {
                     ballToControl = 1;
@@ -970,7 +1018,7 @@ let render = {
         ctx.fillStyle = color;
         ctx.fill();
 
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
         ctx.strokeStyle = strokeColor;
         ctx.stroke();
     },
@@ -1010,3 +1058,43 @@ let render = {
         };
     }
 };
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
+let audio = {
+    generateDefaultHitSound: function () {
+        return new Audio('./src/sounds/mixkit-arcade-retro-changing-tab-206.wav');
+    },
+
+    generateIncreasedHitSound: function () {
+        return new Audio('./src/sounds/mixkit-arcade-mechanical-bling-210.wav');
+    },
+
+    generateScoreSound: function () {
+        return new Audio('./src/sounds/mixkit-arcade-video-game-bonus-2044.wav');
+    },
+
+    generateLoseSound: function () {
+        return new Audio('./src/sounds/mixkit-arcade-space-shooter-dead-notification-272.wav');
+    },
+
+    generateWinSound: function () {
+        return new Audio('./src/sounds/mixkit-arcade-game-complete-or-approved-mission-205.wav');
+    },
+
+    generateBackgroundMusic: function () {
+        return new Audio('./src/music/mixkit-game-level-music-689.wav');
+    },
+
+    backgroundMusic: new Audio('./src/music/mixkit-game-level-music-689.wav'),
+
+    playSound: function (sound) {
+        sound.play();
+    },
+
+    pauseSound: function (sound) {
+        sound.pause();
+    }
+};
+
+audio.backgroundMusic.loop = true;
