@@ -317,6 +317,56 @@ let game = {
 /*-------------------------------------------------------------------------------------------------------------*/
 
 let ui = {
+    enableDisablePlayButton: function () {
+        for (let i = 0; i < document.getElementsByClassName('players-mode-container')[0].children.length; i++) {
+            if (document.getElementsByClassName('players-mode-container')[0].children[i].classList.contains('highlighted-button')) {
+                for (let i = 0; i < document.getElementsByClassName('best-of-mode-container')[0].children.length; i++) {
+                    if (document.getElementsByClassName('best-of-mode-container')[0].children[i].classList.contains('highlighted-button')) {
+                        document.getElementsByClassName('play-button')[0].disabled = false;
+                    };
+                };
+            };
+        };
+    },
+
+    changeVolume: function (el) {
+        audio.volume = Number(el.value);
+        console.log(audio.volume);
+    },
+
+    choosePlayersModeOption: function (el) {
+        helper.highlightElement(el, 'players-mode-container');
+
+        switch (el.innerText) {
+            case '1P vs 1AI':
+                game.playersModeOption = 11;
+                break;
+
+            case '1P vs 2AI':
+                game.playersModeOption = 12;
+                break;
+
+            case '2P vs 1AI':
+                game.playersModeOption = 21;
+                break;
+
+            case '2P vs 2AI':
+                game.playersModeOption = 22;
+                break;
+
+            case 'PvP':
+                game.playersModeOption = 33;
+                break;
+
+            default:
+                break;
+        };
+    },
+
+    chooseAIDifficulty: function (el) {
+
+    },
+
     chooseBestOfOption: function (el) {
         helper.highlightElement(el, 'best-of-mode-container');
 
@@ -360,47 +410,6 @@ let ui = {
         };
 
         document.getElementsByClassName('ball-count')[0].innerHTML = game.ballCountOption;
-    },
-
-    choosePlayersModeOption: function (el) {
-        helper.highlightElement(el, 'players-mode-container');
-
-        switch (el.innerText) {
-            case '1P vs 1AI':
-                game.playersModeOption = 11;
-                break;
-
-            case '1P vs 2AI':
-                game.playersModeOption = 12;
-                break;
-
-            case '2P vs 1AI':
-                game.playersModeOption = 21;
-                break;
-
-            case '2P vs 2AI':
-                game.playersModeOption = 22;
-                break;
-
-            case 'PvP':
-                game.playersModeOption = 33;
-                break;
-
-            default:
-                break;
-        };
-    },
-
-    enableDisablePlayButton: function () {
-        for (let i = 0; i < document.getElementsByClassName('players-mode-container')[0].children.length; i++) {
-            if (document.getElementsByClassName('players-mode-container')[0].children[i].classList.contains('highlighted-button')) {
-                for (let i = 0; i < document.getElementsByClassName('best-of-mode-container')[0].children.length; i++) {
-                    if (document.getElementsByClassName('best-of-mode-container')[0].children[i].classList.contains('highlighted-button')) {
-                        document.getElementsByClassName('play-button')[0].disabled = false;
-                    };
-                };
-            };
-        };
     },
 
     restart: function () {
@@ -1062,6 +1071,8 @@ let render = {
 /*-------------------------------------------------------------------------------------------------------------*/
 
 let audio = {
+    volume: 0.3,
+
     generateDefaultHitSound: function () {
         return new Audio('./src/sounds/mixkit-arcade-retro-changing-tab-206.wav');
     },
@@ -1089,12 +1100,18 @@ let audio = {
     backgroundMusic: new Audio('./src/music/mixkit-game-level-music-689.wav'),
 
     playSound: function (sound) {
+        sound.volume = audio.volume;
         sound.play();
     },
 
     pauseSound: function (sound) {
+        sound.volume = audio.volume;
         sound.pause();
+    },
+
+    initiateBackgroudMusicLooping: function () {
+        audio.backgroundMusic.loop = true;
     }
 };
 
-audio.backgroundMusic.loop = true;
+audio.initiateBackgroudMusicLooping();

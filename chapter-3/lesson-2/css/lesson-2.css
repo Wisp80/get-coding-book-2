@@ -27,7 +27,7 @@ body {
     border: 1px solid black;
     display: flex;
     justify-content: center;
-    margin-top: 50px;
+    margin-top: 20px;
     width: 1600px;
     height: 877px;
 }
@@ -50,6 +50,34 @@ body {
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
+.themes-music-settings-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.themes-container,
+.music-settings-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 20px;
+    margin-left: 20px;
+}
+
+.classic-theme-button,
+.sonic-theme-button {
+    font-family: Calibri;
+    font-size: 16px;
+    margin-right: 5px;
+    margin-left: 5px;
+    margin-top: 3px;
+    width: 60px;
+    height: 25px;
+}
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
 .main-settings-container {
     width: 60%;
     display: flex;
@@ -58,8 +86,11 @@ body {
     align-items: flex-start;
 }
 
+/*-------------------------------------------------------------------------------------------------------------*/
+
 .players-mode-container,
 .best-of-mode-container,
+.ai-difficulty-container,
 .ball-count-container {
     display: flex;
     flex-direction: column;
@@ -69,7 +100,10 @@ body {
 
 .players-mode-container-text,
 .best-of-mode-container-text,
-.ball-count-container-text {
+.ball-count-container-text,
+.ai-difficulty-container-text,
+.themes-container-text,
+.music-settings-container-text {
     font-size: 24px;
 }
 
@@ -82,7 +116,10 @@ body {
 .best-of-three-button,
 .best-of-five-button,
 .best-of-seven-button,
-.best-of-nine-button {
+.best-of-nine-button,
+.easy-ai-button,
+.normal-ai-button,
+.hard-ai-button {
     font-family: Calibri;
     font-size: 16px;
     margin-top: 12px;
@@ -90,6 +127,8 @@ body {
     width: 150px;
     height: 30px;
 }
+
+/*-------------------------------------------------------------------------------------------------------------*/
 
 .ball-count-buttons-container {
     margin-top: 20px;
