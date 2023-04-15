@@ -50,20 +50,6 @@ let helper = {
         return randomNumber;
     },
 
-    changeDisplay: function (element, displayValue) {
-        document.getElementsByClassName(element)[0].style.display = displayValue;
-    },
-
-    highlightElement: function (el, parentContainerClass) {
-        el.classList.add('highlighted-button');
-
-        for (let i = 0; i < document.getElementsByClassName(parentContainerClass)[0].children.length; i++) {
-            if (document.getElementsByClassName(parentContainerClass)[0].children[i] !== el) {
-                document.getElementsByClassName(parentContainerClass)[0].children[i].classList.remove('highlighted-button');
-            };
-        };
-    },
-
     getRandomColor: function () {
         let letters = '0123456789ABCDEF';
         let color = '#';
@@ -102,6 +88,7 @@ let game = {
     bestOfOption: 9,
     playersModeOption: 22,
     ballCountOption: 1,
+    aiDifficulty: 2,
     playersWins: 0,
     aiWins: 0,
     tickTimeout: null,
@@ -284,8 +271,8 @@ let game = {
         game.generateBalls(game.ballCountOption);
         game.resetPaddlesAndBalls();
         ui.updateWinsInfoAndScoreText();
-        helper.changeDisplay('start-screen', 'none');
-        helper.changeDisplay('mainframe', 'flex');
+        ui.changeDisplay('start-screen', 'none');
+        ui.changeDisplay('mainframe', 'flex');
         audio.playSound(audio.backgroundMusic);
         game.tick();
     },
@@ -294,9 +281,9 @@ let game = {
         if (game.aiWins >= (game.bestOfOption + 1) / 2 || game.playersWins >= (game.bestOfOption + 1) / 2) {
             controls.ballsControls.freeze(ballsArray);
 
-            helper.changeDisplay('mainframe', 'none');
+            ui.changeDisplay('mainframe', 'none');
             audio.pauseSound(audio.backgroundMusic);
-            helper.changeDisplay('gameover-container', 'flex');
+            ui.changeDisplay('gameover-container', 'flex');
             ui.updateWinsInfoAndScoreText();
             game.resetScore();
 
@@ -317,25 +304,53 @@ let game = {
 /*-------------------------------------------------------------------------------------------------------------*/
 
 let ui = {
-    enableDisablePlayButton: function () {
-        for (let i = 0; i < document.getElementsByClassName('players-mode-container')[0].children.length; i++) {
-            if (document.getElementsByClassName('players-mode-container')[0].children[i].classList.contains('highlighted-button')) {
-                for (let i = 0; i < document.getElementsByClassName('best-of-mode-container')[0].children.length; i++) {
-                    if (document.getElementsByClassName('best-of-mode-container')[0].children[i].classList.contains('highlighted-button')) {
-                        document.getElementsByClassName('play-button')[0].disabled = false;
-                    };
-                };
+    changeDisplay: function (element, displayValue) {
+        document.getElementsByClassName(element)[0].style.display = displayValue;
+    },
+
+    highlightElement: function (el, parentContainerClass) {
+        el.classList.add('highlighted-button');
+
+        for (let i = 0; i < document.getElementsByClassName(parentContainerClass)[0].children.length; i++) {
+            if (document.getElementsByClassName(parentContainerClass)[0].children[i] !== el) {
+                document.getElementsByClassName(parentContainerClass)[0].children[i].classList.remove('highlighted-button');
             };
+        };
+    },
+
+    countHighlightedButtons: function (parentContainerClass) {
+        let highlightedButtonsCount = 0;
+
+        for (let i = 0; i < document.getElementsByClassName(parentContainerClass)[0].children.length; i++) {
+            if (document.getElementsByClassName(parentContainerClass)[0].children[i].classList.contains('highlighted-button')) {
+                highlightedButtonsCount++;
+            };
+        };
+
+        return highlightedButtonsCount;
+    },
+
+    enableDisablePlayButton: function () {
+        let highlightedMainSettingsButtonsCount = ui.countHighlightedButtons('players-mode-container')
+            + ui.countHighlightedButtons('ai-difficulty-container')
+            + ui.countHighlightedButtons('best-of-mode-container');
+
+        if (highlightedMainSettingsButtonsCount === 3) {
+            document.getElementsByClassName('play-button')[0].disabled = false;
+        } else {
+            document.getElementsByClassName('play-button')[0].disabled = true;
         };
     },
 
     changeVolume: function (el) {
         audio.volume = Number(el.value);
         console.log(audio.volume);
+
+        countHighlightedButtons('players-mode-container');
     },
 
     choosePlayersModeOption: function (el) {
-        helper.highlightElement(el, 'players-mode-container');
+        ui.highlightElement(el, 'players-mode-container');
 
         switch (el.innerText) {
             case '1P vs 1AI':
@@ -364,11 +379,28 @@ let ui = {
     },
 
     chooseAIDifficulty: function (el) {
+        ui.highlightElement(el, 'ai-difficulty-container');
 
+        switch (el.innerText) {
+            case 'Easy 🤡':
+                game.aiDifficulty = 1;
+                break;
+
+            case 'Normal 🍻':
+                game.aiDifficulty = 2;
+                break;
+
+            case 'Hard 💀':
+                game.aiDifficulty = 3;
+                break;
+
+            default:
+                break;
+        };
     },
 
     chooseBestOfOption: function (el) {
-        helper.highlightElement(el, 'best-of-mode-container');
+        ui.highlightElement(el, 'best-of-mode-container');
 
         switch (el.innerText) {
             case 'Best of 1':
@@ -417,21 +449,23 @@ let ui = {
         ui.updateWinsInfoAndScoreText();
         game.resetPaddlesAndBalls();
 
-        helper.changeDisplay('gameover-container', 'none');
-        helper.changeDisplay('mainframe', 'flex');
+        ui.changeDisplay('gameover-container', 'none');
+        ui.changeDisplay('mainframe', 'flex');
         audio.playSound(audio.backgroundMusic);
     },
 
     goToMainMenuFromGameoverScreen: function () {
-        helper.changeDisplay('start-screen', 'flex');
-        helper.changeDisplay('gameover-container', 'none');
+        controls.ballsControls.freeze(ballsArray);
+
+        ui.changeDisplay('start-screen', 'flex');
+        ui.changeDisplay('gameover-container', 'none');
     },
 
     goToMainMenuFromMainframe: function () {
         controls.ballsControls.freeze(ballsArray);
 
-        helper.changeDisplay('start-screen', 'flex');
-        helper.changeDisplay('mainframe', 'none');
+        ui.changeDisplay('start-screen', 'flex');
+        ui.changeDisplay('mainframe', 'none');
         audio.pauseSound(audio.backgroundMusic);
     },
 
@@ -664,7 +698,6 @@ function Ball(x, y, radius, xSpeed, ySpeed, color, strokeColor) {
             } else if (game.playersWins >= (game.bestOfOption + 1) / 2) {
                 audio.playSound(audio.generateWinSound());
             } else {
-                console.log('0');
                 audio.playSound(audio.generateScoreSound());
             };
 
@@ -683,7 +716,6 @@ function Ball(x, y, radius, xSpeed, ySpeed, color, strokeColor) {
             } else if (game.playersWins >= (game.bestOfOption + 1) / 2) {
                 audio.playSound(audio.generateWinSound());
             } else {
-                console.log('0');
                 audio.playSound(audio.generateScoreSound());
             };
 
@@ -862,27 +894,81 @@ let controls = {
 
         updateAiControlsOne: function (ai) {
             let aiMiddle = ai.y + (ai.height / 2);
+            let ballToControl;
 
-            let ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSide(ballsArray);
-            // let ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToAI(ballsArray, ai);
-            // let ballToControl = controls.aiControls.findTheBallThatHasSeconsMinimumDistanceToRightSide(ballsArray);
-            // let ballToControl = controls.aiControls.findTheBallThatHasSecondMinimumDistanceToAI(ballsArray, ai);
-            // console.log('ai1 ' + ballToControl);
+            if (game.playersModeOption === 11 || game.playersModeOption === 21) {
+                switch (game.aiDifficulty) {
+                    case 1:
+                        ai.speed = aiPaddlesData.aiOnePaddleData.speed - 4;
+                        ballToControl = ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToAI(ballsArray, ai);
+                        break;
 
-            if (!ballToControl) {
-                ballToControl = 0;
-            };
+                    case 2:
+                        ai.speed = aiPaddlesData.aiOnePaddleData.speed - 2;
+                        ballToControl = ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSide(ballsArray);
+                        break;
 
-            if (aiMiddle < ballsArray[ballToControl].y) {
-                controls.aiControls.move('40', ai);
-            };
+                    case 3:
+                        ballToControl = ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSide(ballsArray);
+                        ai.speed = aiPaddlesData.aiOnePaddleData.speed;
+                        break;
 
-            if (aiMiddle > ballsArray[ballToControl].y) {
-                controls.aiControls.move('38', ai);
-            };
+                    default:
+                        break;
+                };
 
-            if (aiMiddle === ballsArray[ballToControl].y) {
-                ai.defaultSpeedModifier = aiPaddlesData.aiOnePaddleData.defaultSpeedModifier;
+                if (!ballToControl) {
+                    ballToControl = 0;
+                };
+
+                if (aiMiddle < ballsArray[ballToControl].y) {
+                    controls.aiControls.move('40', ai);
+                };
+
+                if (aiMiddle > ballsArray[ballToControl].y) {
+                    controls.aiControls.move('38', ai);
+                };
+
+                if (aiMiddle === ballsArray[ballToControl].y) {
+                    ai.defaultSpeedModifier = aiPaddlesData.aiOnePaddleData.defaultSpeedModifier;
+                };
+
+            } else {
+
+                switch (game.aiDifficulty) {
+                    case 1:
+                        ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSide(ballsArray);
+                        break;
+
+                    case 2:
+                        ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToAI(ballsArray, ai);
+                        break;
+
+                    case 3:
+                        ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSide(ballsArray);
+                        break;
+
+                    default:
+                        break;
+                };
+
+                console.log(ballToControl);
+
+                if (!ballToControl) {
+                    ballToControl = 0;
+                };
+
+                if (aiMiddle < ballsArray[ballToControl].y) {
+                    controls.aiControls.move('40', ai);
+                };
+
+                if (aiMiddle > ballsArray[ballToControl].y) {
+                    controls.aiControls.move('38', ai);
+                };
+
+                if (aiMiddle === ballsArray[ballToControl].y) {
+                    ai.defaultSpeedModifier = aiPaddlesData.aiOnePaddleData.defaultSpeedModifier;
+                };
             };
         },
 
@@ -928,11 +1014,26 @@ let controls = {
             let aiMiddle = aiOne.y + (aiOne.height / 2);
 
             if (game.ballCountOption > 1) {
-                // let ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSide(ballsArray);
-                // let ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToAI(ballsArray, aiOne);
-                let ballToControl = controls.aiControls.findTheBallThatHasSeconsMinimumDistanceToRightSide(ballsArray);
-                // let ballToControl = controls.aiControls.findTheBallThatHasSecondMinimumDistanceToAI(ballsArray, aiOne);
-                // console.log('ai2 ' + ballToControl);
+                let ballToControl;
+
+                switch (game.aiDifficulty) {
+                    case 1:
+                        ballToControl = controls.aiControls.findTheBallThatHasSecondMinimumDistanceToAI(ballsArray, aiOne);
+                        break;
+
+                    case 2:
+                        ballToControl = controls.aiControls.findTheBallThatHasSecondMinimumDistanceToAI(ballsArray, aiOne);
+                        break;
+
+                    case 3:
+                        ballToControl = controls.aiControls.findTheBallThatHasSeconsMinimumDistanceToRightSide(ballsArray);
+                        break;
+
+                    default:
+                        break;
+                };
+
+                console.log(ballToControl);
 
                 if (!ballToControl) {
                     ballToControl = 1;
