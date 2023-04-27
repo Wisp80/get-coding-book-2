@@ -85,10 +85,10 @@ let helper = {
 /*-------------------------------------------------------------------------------------------------------------*/
 
 let game = {
-    bestOfOption: 9,
-    playersModeOption: 22,
-    ballCountOption: 1,
-    aiDifficulty: 2,
+    bestOfOption: 3,
+    playersModeOption: 11,
+    ballCountOption: 3,
+    aiDifficulty: 1,
     playersWins: 0,
     aiWins: 0,
     tickTimeout: null,
@@ -187,7 +187,7 @@ let game = {
             ballsArray[i] = new Ball(
                 ballData.xPosition + Math.random(),
                 ballData.yPosition + Math.random(),
-                helper.getRandomNumberFromRange(7, 10),
+                helper.getRandomNumberFromRange(11, 13),
                 helper.getRandomNumberFromLowerBoundToMinusOneOrFromOneToUpperBound(-3, 3),
                 helper.getRandomNumberFromLowerBoundToZeroOrFromZeroToUpperBound(-3, 3),
                 helper.getRandomColor(),
@@ -344,9 +344,6 @@ let ui = {
 
     changeVolume: function (el) {
         audio.volume = Number(el.value);
-        console.log(audio.volume);
-
-        countHighlightedButtons('players-mode-container');
     },
 
     choosePlayersModeOption: function (el) {
@@ -392,6 +389,14 @@ let ui = {
 
             case 'Hard 💀':
                 game.aiDifficulty = 3;
+                break;
+
+            case 'Very Hard 😈':
+                game.aiDifficulty = 4;
+                break;
+
+            case 'Impossible 👽':
+                game.aiDifficulty = 5;
                 break;
 
             default:
@@ -484,7 +489,11 @@ let ui = {
             document.getElementsByClassName('score-text')[0].innerHTML = 'You ' + game.playersWins + ' : ' + game.aiWins + ' AI';
         };
     },
-}
+
+    pauseTheGame: function () {
+        alert(`Click 'OK' to resume`);
+    }
+};
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
@@ -499,10 +508,78 @@ function Paddle(x, y, width, height, defaultSpeedModifier, increasedSpeedModifie
     this.color = color;
     this.strokeColor = strokeColor;
 
-    this.hasCollidedWith = function (ball) {
+    this.hasCollidedWithTopWall = function (ball, hitbox) {
+        let paddleLeftWall = this.x;
+        let paddleRightWall = this.x + this.width;
+        let paddleTopWall = this.y;
+
+        if (
+            ball.x >= paddleLeftWall
+            && ball.x <= paddleRightWall
+            && ball.y <= paddleTopWall
+            && ball.y >= paddleTopWall - hitbox
+        ) {
+            return true;
+        };
+
+        return false;
+    };
+
+    this.hasCollidedWithBottomWall = function (ball, hitbox) {
+        let paddleLeftWall = this.x;
+        let paddleRightWall = this.x + this.width;
+        let paddleBottomWall = this.y + this.height;
+
+        if (
+            ball.x >= paddleLeftWall
+            && ball.x <= paddleRightWall
+            && ball.y >= paddleBottomWall
+            && ball.y <= paddleBottomWall + hitbox
+        ) {
+            return true;
+        };
+
+        return false;
+    };
+
+    this.hasCollidedWithRightWall = function (ball, hitbox) {
+        let paddleRightWall = this.x + this.width;
+        let paddleTopWall = this.y;
+        let paddleBottomWall = this.y + this.height;
+
+        if (
+            ball.x >= paddleRightWall
+            && ball.x <= paddleRightWall + hitbox
+            && ball.y >= paddleTopWall
+            && ball.y <= paddleBottomWall
+        ) {
+            return true;
+        };
+
+        return false;
+    };
+
+    this.hasCollidedWithLeftWall = function (ball, hitbox) {
         let paddleLeftWall = this.x;
         let paddleTopWall = this.y;
+        let paddleBottomWall = this.y + this.height;
+
+        if (
+            ball.x <= paddleLeftWall
+            && ball.x >= paddleLeftWall - hitbox
+            && ball.y >= paddleTopWall
+            && ball.y <= paddleBottomWall
+        ) {
+            return true;
+        };
+
+        return false;
+    };
+
+    this.hasCollidedWithInnerSpace = function (ball) {
+        let paddleLeftWall = this.x;
         let paddleRightWall = this.x + this.width;
+        let paddleTopWall = this.y;
         let paddleBottomWall = this.y + this.height;
 
         if (
@@ -520,7 +597,7 @@ function Paddle(x, y, width, height, defaultSpeedModifier, increasedSpeedModifie
 
 let playersPaddlesData = {
     playerOnePaddleData: {
-        width: 6,
+        width: 30,
         height: 160,
         xPosition: 3,
         yPosition: 500,
@@ -532,7 +609,7 @@ let playersPaddlesData = {
     },
 
     playerTwoPaddleData: {
-        width: 6,
+        width: 30,
         height: 160,
         xPosition: 3,
         yPosition: 200,
@@ -562,25 +639,25 @@ let players = {
 
 let aiPaddlesData = {
     aiOnePaddleData: {
-        width: 6,
+        width: 30,
         height: 160,
-        xPosition: 1591,
+        xPosition: 1567,
         yPosition: 500,
         defaultSpeedModifier: 0.5,
         increasedSpeedModifier: 0.7,
-        speed: 9,
+        speed: 6,
         color: helper.getRandomColor(),
         strokeColor: helper.getRandomColor()
     },
 
     aiTwoPaddleData: {
-        width: 6,
+        width: 30,
         height: 160,
-        xPosition: 1591,
+        xPosition: 1567,
         yPosition: 200,
         defaultSpeedModifier: 0.5,
         increasedSpeedModifier: 0.7,
-        speed: 9,
+        speed: 6,
         color: helper.getRandomColor(),
         strokeColor: helper.getRandomColor()
     }
@@ -682,82 +759,58 @@ function Ball(x, y, radius, xSpeed, ySpeed, color, strokeColor) {
         };
     };
 
-    this.updateBall = function () {
-        this.x += this.xSpeed;
-        this.y += this.ySpeed;
-
-        if (this.x < 0) {
-            game.aiWins++;
-
-            if (game.aiWins >= (game.bestOfOption + 1) / 2) {
-                if (game.playersModeOption === 33) {
-                    audio.playSound(audio.generateWinSound());
-                } else {
-                    audio.playSound(audio.generateLoseSound());
-                };
-            } else if (game.playersWins >= (game.bestOfOption + 1) / 2) {
+    this.playLoseWinSounds = function () {
+        if (game.aiWins >= (game.bestOfOption + 1) / 2) {
+            if (game.playersModeOption === 33) {
                 audio.playSound(audio.generateWinSound());
             } else {
-                audio.playSound(audio.generateScoreSound());
+                audio.playSound(audio.generateLoseSound());
             };
-
-            ui.updateScore();
+        } else if (game.playersWins >= (game.bestOfOption + 1) / 2) {
+            audio.playSound(audio.generateWinSound());
+        } else {
+            audio.playSound(audio.generateScoreSound());
         };
+    };
 
-        if (this.x > canvas.width) {
-            game.playersWins++;
+    this.checkCollisionWithTopAndBottomWalls = function (hitbox, safespace) {
+        let collidedWithPlayerOneTopWall = false;
+        let collidedWithPlayerTwoTopWall = false;
+        let collidedWithAiOneTopWall = false;
+        let collidedWithAiTwoTopWall = false;
 
-            if (game.aiWins >= (game.bestOfOption + 1) / 2) {
-                if (game.playersModeOption === 33) {
-                    audio.playSound(audio.generateWinSound());
-                } else {
-                    audio.playSound(audio.generateLoseSound());
-                };
-            } else if (game.playersWins >= (game.bestOfOption + 1) / 2) {
-                audio.playSound(audio.generateWinSound());
-            } else {
-                audio.playSound(audio.generateScoreSound());
-            };
+        let collidedWithPlayerOneBottomWall = false;
+        let collidedWithPlayerTwoBottomWall = false;
+        let collidedWithAiOneBottomWall = false;
+        let collidedWithAiTwoBottomWall = false;
 
-            ui.updateScore();
-        };
-
-        if (this.y <= 10 || this.y >= canvas.height - 10) {
-            this.reverseY();
-        };
-
-        let collidedWithPlayerOne;
-        let collidedWithPlayerTwo;
-        let collidedWithAiOne;
-        let collidedWithAiTwo;
-
-        collidedWithPlayerOne = players.playerOne.hasCollidedWith(this);
+        collidedWithPlayerOneTopWall = players.playerOne.hasCollidedWithTopWall(this, hitbox);
+        collidedWithPlayerOneBottomWall = players.playerOne.hasCollidedWithBottomWall(this, hitbox);
 
         if (players.playerTwo !== null) {
-            collidedWithPlayerTwo = players.playerTwo.hasCollidedWith(this);
+            collidedWithPlayerTwoTopWall = players.playerTwo.hasCollidedWithTopWall(this, hitbox);
+            collidedWithPlayerTwoBottomWall = players.playerTwo.hasCollidedWithBottomWall(this, hitbox);
         };
 
         if (ai.aiOne !== null) {
-            collidedWithAiOne = ai.aiOne.hasCollidedWith(this);
+            collidedWithAiOneTopWall = ai.aiOne.hasCollidedWithTopWall(this, hitbox);
+            collidedWithAiOneBottomWall = ai.aiOne.hasCollidedWithBottomWall(this, hitbox);
         };
 
         if (ai.aiTwo !== null) {
-            collidedWithAiTwo = ai.aiTwo.hasCollidedWith(this);
+            collidedWithAiTwoTopWall = ai.aiTwo.hasCollidedWithTopWall(this, hitbox);
+            collidedWithAiTwoBottomWall = ai.aiTwo.hasCollidedWithBottomWall(this, hitbox);
         };
 
-        if (collidedWithPlayerOne || collidedWithPlayerTwo || collidedWithAiOne || collidedWithAiTwo) {
-            this.reverseX();
-        };
-
-        if (collidedWithPlayerOne) {
+        if (collidedWithPlayerOneTopWall || collidedWithPlayerOneBottomWall) {
             this.increaseSpeed('38', '40', players.playerOne);
         };
 
-        if (collidedWithPlayerTwo) {
+        if (collidedWithPlayerTwoTopWall || collidedWithPlayerTwoBottomWall) {
             this.increaseSpeed('83', '87', players.playerTwo);
         };
 
-        if (collidedWithAiOne) {
+        if (collidedWithAiOneTopWall || collidedWithAiOneBottomWall) {
             if (ai.aiOne.defaultSpeedModifier === 0.5) {
                 audio.playSound(audio.generateDefaultHitSound());
             } else {
@@ -768,7 +821,7 @@ function Ball(x, y, radius, xSpeed, ySpeed, color, strokeColor) {
             this.modifyYSpeedBy(ai.aiOne.defaultSpeedModifier);
         };
 
-        if (collidedWithAiTwo) {
+        if (collidedWithAiTwoTopWall || collidedWithAiTwoBottomWall) {
             if (ai.aiTwo.defaultSpeedModifier === 0.5) {
                 audio.playSound(audio.generateDefaultHitSound());
             } else {
@@ -777,6 +830,208 @@ function Ball(x, y, radius, xSpeed, ySpeed, color, strokeColor) {
 
             this.modifyXSpeedBy(ai.aiTwo.defaultSpeedModifier);
             this.modifyYSpeedBy(ai.aiTwo.defaultSpeedModifier);
+        };
+
+        if (collidedWithPlayerOneTopWall) {
+            this.y = players.playerOne.y - safespace;
+        };
+
+        if (collidedWithPlayerOneBottomWall) {
+            this.y = players.playerOne.y + players.playerOne.height + safespace;
+        };
+
+        if (collidedWithPlayerTwoTopWall) {
+            this.y = players.playerTwo.y - safespace;
+        };
+
+        if (collidedWithPlayerTwoBottomWall) {
+            this.y = players.playerTwo.y + players.playerTwo.height + safespace;
+        };
+
+        if (collidedWithAiOneTopWall) {
+            this.y = ai.aiOne.y - safespace;
+        };
+
+        if (collidedWithAiOneBottomWall) {
+            this.y = ai.aiOne.y + ai.aiOne.height + safespace;
+        };
+
+        if (collidedWithAiTwoTopWall) {
+            this.y = ai.aiTwo.y - safespace;
+        };
+
+        if (collidedWithAiTwoBottomWall) {
+            this.y = ai.aiTwo.y + ai.aiTwo.height + safespace;
+        };
+
+        if (collidedWithPlayerOneTopWall || collidedWithPlayerOneBottomWall || collidedWithPlayerTwoTopWall || collidedWithPlayerTwoBottomWall
+            || collidedWithAiOneTopWall || collidedWithAiOneBottomWall || collidedWithAiTwoTopWall || collidedWithAiTwoBottomWall) {
+            this.reverseY();
+            this.reverseX();
+            return true;
+        } else {
+            return false;
+        };
+    };
+
+    this.checkCollisionWithLeftAndRightBalls = function (hitbox, safespace) {
+        let collidedWithPlayerOneRightWall = false;
+        let collidedWithPlayerTwoRightWall = false;
+        let collidedWithAiOneLeftWall = false;
+        let collidedWithAiTwoLeftWall = false;
+
+        collidedWithPlayerOneRightWall = players.playerOne.hasCollidedWithRightWall(this, hitbox);
+
+        if (players.playerTwo !== null) {
+            collidedWithPlayerTwoRightWall = players.playerTwo.hasCollidedWithRightWall(this, hitbox);
+        };
+
+        if (ai.aiOne !== null) {
+            collidedWithAiOneLeftWall = ai.aiOne.hasCollidedWithLeftWall(this, hitbox);
+        };
+
+        if (ai.aiTwo !== null) {
+            collidedWithAiTwoLeftWall = ai.aiTwo.hasCollidedWithLeftWall(this, hitbox);
+        };
+
+        if (collidedWithPlayerOneRightWall) {
+            this.increaseSpeed('38', '40', players.playerOne);
+        };
+
+        if (collidedWithPlayerTwoRightWall) {
+            this.increaseSpeed('83', '87', players.playerTwo);
+        };
+
+        if (collidedWithAiOneLeftWall) {
+            if (ai.aiOne.defaultSpeedModifier === 0.5) {
+                audio.playSound(audio.generateDefaultHitSound());
+            } else {
+                audio.playSound(audio.generateIncreasedHitSound());
+            };
+
+            this.modifyXSpeedBy(ai.aiOne.defaultSpeedModifier);
+            this.modifyYSpeedBy(ai.aiOne.defaultSpeedModifier);
+        };
+
+        if (collidedWithAiTwoLeftWall) {
+            if (ai.aiTwo.defaultSpeedModifier === 0.5) {
+                audio.playSound(audio.generateDefaultHitSound());
+            } else {
+                audio.playSound(audio.generateIncreasedHitSound());
+            };
+
+            this.modifyXSpeedBy(ai.aiTwo.defaultSpeedModifier);
+            this.modifyYSpeedBy(ai.aiTwo.defaultSpeedModifier);
+        };
+
+        if (collidedWithPlayerOneRightWall) {
+            this.x = playersPaddlesData.playerOnePaddleData.xPosition + playersPaddlesData.playerOnePaddleData.width + safespace;
+        };
+
+        if (collidedWithPlayerTwoRightWall) {
+            this.x = playersPaddlesData.playerTwoPaddleData.xPosition + playersPaddlesData.playerTwoPaddleData.width + safespace;
+        };
+
+        if (collidedWithAiOneLeftWall) {
+            this.x = aiPaddlesData.aiTwoPaddleData.xPosition - safespace;
+        };
+
+        if (collidedWithAiTwoLeftWall) {
+            this.x = aiPaddlesData.aiTwoPaddleData.xPosition - safespace;
+        };
+
+        if (collidedWithPlayerOneRightWall || collidedWithPlayerTwoRightWall || collidedWithAiOneLeftWall || collidedWithAiTwoLeftWall) {
+            this.reverseX();
+        };
+    };
+
+    this.checkCollisionWithInnerSpace = function (safespace) {
+        let collidedWithPlayerOneInnerSpace = false;
+        let collidedWithPlayerTwoInnerSpace = false;
+        let collidedWithAiOneInnerSpace = false;
+        let collidedWithAiTwoInnerSpace = false;
+
+        collidedWithPlayerOneInnerSpace = players.playerOne.hasCollidedWithInnerSpace(this);
+
+        if (players.playerTwo !== null) {
+            collidedWithPlayerTwoInnerSpace = players.playerTwo.hasCollidedWithInnerSpace(this);
+        };
+
+        if (ai.aiOne !== null) {
+            collidedWithAiOneInnerSpace = ai.aiOne.hasCollidedWithInnerSpace(this);
+        };
+
+        if (ai.aiTwo !== null) {
+            collidedWithAiTwoInnerSpace = ai.aiTwo.hasCollidedWithInnerSpace(this);
+        };
+
+        if (collidedWithPlayerOneInnerSpace) {
+            if (this.y - players.playerOne.y < (players.playerOne.y + players.playerOne.height) - this.y) {
+                this.y = players.playerOne.y - safespace;
+            } else {
+                this.y = (players.playerOne.y + players.playerOne.height) + safespace;
+            };
+        };
+
+        if (collidedWithPlayerTwoInnerSpace) {
+            if (this.y - players.playerTwo.y < (players.playerTwo.y + players.playerTwo.height) - this.y) {
+                this.y = players.playerTwo.y - safespace;
+            } else {
+                this.y = (players.playerTwo.y + players.playerTwo.height) + safespace;
+            };
+        };
+
+        if (collidedWithAiOneInnerSpace) {
+            if (this.y - ai.aiOne.y < (ai.aiOne.y + ai.aiOne.height) - this.y) {
+                this.y = ai.aiOne.y - safespace;
+            } else {
+                this.y = (ai.aiOne.y + ai.aiOne.height) + safespace;
+            };
+        };
+
+        if (collidedWithAiTwoInnerSpace) {
+            if (this.y - ai.aiTwo.y < (ai.aiTwo.y + ai.aiTwo.height) - this.y) {
+                this.y = ai.aiTwo.y - safespace;
+            } else {
+                this.y = (ai.aiTwo.y + ai.aiTwo.height) + safespace;
+            };
+        };
+    };
+
+    this.updateBall = function () {
+        if (this.x < 0) {
+            game.aiWins++;
+            this.playLoseWinSounds();
+            ui.updateScore();
+        };
+
+        if (this.x > canvas.width) {
+            game.playersWins++;
+            this.playLoseWinSounds();
+            ui.updateScore();
+        };
+
+        if (this.y <= 10 || this.y >= canvas.height - 10) {
+            this.reverseY();
+        };
+
+        let anyCollisionWithTopAndBottomWalls = this.checkCollisionWithTopAndBottomWalls(14, 16 + playersPaddlesData.playerOnePaddleData.speed);
+
+        if (!anyCollisionWithTopAndBottomWalls) {
+            this.checkCollisionWithLeftAndRightBalls(14, 16);
+        };
+
+        this.checkCollisionWithInnerSpace(16 + playersPaddlesData.playerOnePaddleData.speed);
+
+        this.x += this.xSpeed;
+        this.y += this.ySpeed;
+
+        if (this.y < 0) {
+            this.y = 11;
+            this.ySpeed = 14.2;
+        } else if (this.y > 800) {
+            this.y = 789;
+            this.ySpeed = -14.2;
         };
     };
 };
@@ -852,27 +1107,23 @@ let controls = {
             ai.y = nextY;
         },
 
-        findTheBallThatHasMinimumDistanceToRightSide: function (ballsArray) {
-            let distancesFromBallsToRightSide = [];
-
-            for (let i = 0; i < ballsArray.length; i++) {
-                distancesFromBallsToRightSide[i] = canvas.width - ballsArray[i].x;
-            };
-
-            let minimumDistanceToRightSide = canvas.width;
-            let ballThatHasMinimumDistanceToRightSide;
-
-            for (let i = 0; i < distancesFromBallsToRightSide.length; i++) {
-                if (distancesFromBallsToRightSide[i] < minimumDistanceToRightSide) {
-                    minimumDistanceToRightSide = distancesFromBallsToRightSide[i];
-                    ballThatHasMinimumDistanceToRightSide = i;
-                };
-            };
-
-            return ballThatHasMinimumDistanceToRightSide;
+        drawTarget: function (ai, aiMiddle, ballToControl, color) {
+            ctx.beginPath();
+            ctx.moveTo(ai.x, aiMiddle);
+            ctx.lineTo(ballsArray[ballToControl].x, ballsArray[ballToControl].y);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.closePath();
         },
 
+        /*-------------------------------------------------------------------------------------------------------------*/
+
         findTheBallThatHasMinimumDistanceToAI: function (ballsArray, ai) {
+            if (ballsArray.length === 0 || !ai) {
+                return 0;
+            };
+
             let distancesFromBallsToAI = [];
 
             for (let i = 0; i < ballsArray.length; i++) {
@@ -892,6 +1143,86 @@ let controls = {
             return ballThatHasMinimumDistanceToAI;
         },
 
+        findTheBallThatHasMinimumDistanceToAIConsideringBallXDirection: function (ballsArray, ai) {
+            if (ballsArray.length === 0 || !ai) {
+                return 0;
+            };
+
+            let distancesFromBallsToAI = [];
+
+            for (let i = 0; i < ballsArray.length; i++) {
+                distancesFromBallsToAI[i] = Math.sqrt(Math.pow((ai.x - ballsArray[i].x), 2) + Math.pow((ai.y + (ai.height / 2) - ballsArray[i].y), 2));
+            };
+
+            let minimumDistanceToAI = canvas.width;
+            let ballThatHasMinimumDistanceToAI = null;
+
+            for (let i = 0; i < distancesFromBallsToAI.length; i++) {
+                if (distancesFromBallsToAI[i] < minimumDistanceToAI && ballsArray[i].xSpeed > 0) {
+                    minimumDistanceToAI = distancesFromBallsToAI[i];
+                    ballThatHasMinimumDistanceToAI = i;
+                };
+            };
+
+            if (ballThatHasMinimumDistanceToAI === null) {
+                ballThatHasMinimumDistanceToAI = controls.aiControls.findTheBallThatHasMinimumDistanceToAI(ballsArray, ai)
+            };
+
+            return ballThatHasMinimumDistanceToAI;
+        },
+
+        findTheBallThatHasMinimumDistanceToRightSide: function (ballsArray) {
+            if (ballsArray.length === 0) {
+                return 0;
+            };
+
+            let distancesFromBallsToRightSide = [];
+
+            for (let i = 0; i < ballsArray.length; i++) {
+                distancesFromBallsToRightSide[i] = canvas.width - ballsArray[i].x;
+            };
+
+            let minimumDistanceToRightSide = canvas.width;
+            let ballThatHasMinimumDistanceToRightSide;
+
+            for (let i = 0; i < distancesFromBallsToRightSide.length; i++) {
+                if (distancesFromBallsToRightSide[i] < minimumDistanceToRightSide) {
+                    minimumDistanceToRightSide = distancesFromBallsToRightSide[i];
+                    ballThatHasMinimumDistanceToRightSide = i;
+                };
+            };
+
+            return ballThatHasMinimumDistanceToRightSide;
+        },
+
+        findTheBallThatHasMinimumDistanceToRightSideConsideringBallXDirection: function (ballsArray) {
+            if (ballsArray.length === 0) {
+                return 0;
+            };
+
+            let distancesFromBallsToRightSide = [];
+
+            for (let i = 0; i < ballsArray.length; i++) {
+                distancesFromBallsToRightSide[i] = canvas.width - ballsArray[i].x;
+            };
+
+            let minimumDistanceToRightSide = canvas.width;
+            let ballThatHasMinimumDistanceToRightSide = null;
+
+            for (let i = 0; i < distancesFromBallsToRightSide.length; i++) {
+                if (distancesFromBallsToRightSide[i] < minimumDistanceToRightSide && ballsArray[i].xSpeed > 0) {
+                    minimumDistanceToRightSide = distancesFromBallsToRightSide[i];
+                    ballThatHasMinimumDistanceToRightSide = i;
+                };
+            };
+
+            if (ballThatHasMinimumDistanceToRightSide === null) {
+                ballThatHasMinimumDistanceToRightSide = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSide(ballsArray);
+            };
+
+            return ballThatHasMinimumDistanceToRightSide;
+        },
+
         updateAiControlsOne: function (ai) {
             let aiMiddle = ai.y + (ai.height / 2);
             let ballToControl;
@@ -899,18 +1230,28 @@ let controls = {
             if (game.playersModeOption === 11 || game.playersModeOption === 21) {
                 switch (game.aiDifficulty) {
                     case 1:
-                        ai.speed = aiPaddlesData.aiOnePaddleData.speed - 4;
+                        ai.speed = aiPaddlesData.aiOnePaddleData.speed - 3;
                         ballToControl = ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToAI(ballsArray, ai);
                         break;
 
                     case 2:
-                        ai.speed = aiPaddlesData.aiOnePaddleData.speed - 2;
-                        ballToControl = ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSide(ballsArray);
+                        ai.speed = aiPaddlesData.aiOnePaddleData.speed - 1;
+                        ballToControl = ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToAI(ballsArray, ai);
                         break;
 
                     case 3:
+                        ai.speed = aiPaddlesData.aiOnePaddleData.speed + 1;
+                        ballToControl = ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToAIConsideringBallXDirection(ballsArray, ai);
+                        break;
+
+                    case 4:
+                        ai.speed = aiPaddlesData.aiOnePaddleData.speed + 2;
                         ballToControl = ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSide(ballsArray);
-                        ai.speed = aiPaddlesData.aiOnePaddleData.speed;
+                        break;
+
+                    case 5:
+                        ai.speed = aiPaddlesData.aiOnePaddleData.speed + 3;
+                        ballToControl = ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSideConsideringBallXDirection(ballsArray);
                         break;
 
                     default:
@@ -921,77 +1262,121 @@ let controls = {
                     ballToControl = 0;
                 };
 
-                if (aiMiddle < ballsArray[ballToControl].y) {
-                    controls.aiControls.move('40', ai);
-                };
+                if (ballsArray[ballToControl]) {
+                    if (aiMiddle < ballsArray[ballToControl].y) {
+                        controls.aiControls.move('40', ai);
+                    };
 
-                if (aiMiddle > ballsArray[ballToControl].y) {
-                    controls.aiControls.move('38', ai);
-                };
+                    if (aiMiddle > ballsArray[ballToControl].y) {
+                        controls.aiControls.move('38', ai);
+                    };
 
-                if (aiMiddle === ballsArray[ballToControl].y) {
-                    ai.defaultSpeedModifier = aiPaddlesData.aiOnePaddleData.defaultSpeedModifier;
+                    if (aiMiddle === ballsArray[ballToControl].y) {
+                        ai.defaultSpeedModifier = aiPaddlesData.aiOnePaddleData.defaultSpeedModifier;
+                    };
                 };
 
             } else {
 
                 switch (game.aiDifficulty) {
                     case 1:
-                        ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSide(ballsArray);
+                        ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToAI(ballsArray, ai);
+
+                        if (ballsArray.length > 2) {
+                            ai.speed = aiPaddlesData.aiOnePaddleData.speed;
+                        } else if (ballsArray.length === 1) {
+                            ai.speed = aiPaddlesData.aiOnePaddleData.speed - 4;
+                        } else if (ballsArray.length === 2) {
+                            ai.speed = aiPaddlesData.aiOnePaddleData.speed - 4;
+                        };
+
                         break;
 
                     case 2:
-                        ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToAI(ballsArray, ai);
+                        ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToAIConsideringBallXDirection(ballsArray, ai);
+
+                        if (ballsArray.length > 2) {
+                            ai.speed = aiPaddlesData.aiOnePaddleData.speed - 1;
+                        } else if (ballsArray.length === 1) {
+                            ai.speed = aiPaddlesData.aiOnePaddleData.speed - 3;
+                        } else if (ballsArray.length === 2) {
+                            ai.speed = aiPaddlesData.aiOnePaddleData.speed - 3;
+                        };
+
                         break;
 
                     case 3:
                         ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSide(ballsArray);
+
+                        if (ballsArray.length > 2) {
+                            ai.speed = aiPaddlesData.aiOnePaddleData.speed;
+                        } else if (ballsArray.length === 1) {
+                            ai.speed = aiPaddlesData.aiOnePaddleData.speed - 3;
+                        } else if (ballsArray.length === 2) {
+                            ai.speed = aiPaddlesData.aiOnePaddleData.speed - 2.5;
+                        };
+
+                        break;
+
+                    case 4:
+                        ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSideConsideringBallXDirection(ballsArray);
+
+                        if (ballsArray.length > 2) {
+                            ai.speed = aiPaddlesData.aiOnePaddleData.speed;
+                        } else if (ballsArray.length === 1) {
+                            ai.speed = aiPaddlesData.aiOnePaddleData.speed - 2;
+                        } else if (ballsArray.length === 2) {
+                            ai.speed = aiPaddlesData.aiOnePaddleData.speed - 1.5;
+                        };
+
+                        break;
+
+                    case 5:
+                        ballToControl = controls.aiControls.findTheBallThatHasMinimumDistanceToRightSideConsideringBallXDirection(ballsArray);
+
+                        if (ballsArray.length > 2) {
+                            ai.speed = aiPaddlesData.aiOnePaddleData.speed + 3;
+                        } else if (ballsArray.length === 1) {
+                            ai.speed = aiPaddlesData.aiOnePaddleData.speed - 1.5;
+                        } else if (ballsArray.length === 2) {
+                            ai.speed = aiPaddlesData.aiOnePaddleData.speed - 1;
+                        };
+
                         break;
 
                     default:
                         break;
                 };
 
-                console.log(ballToControl);
-
                 if (!ballToControl) {
                     ballToControl = 0;
                 };
 
-                if (aiMiddle < ballsArray[ballToControl].y) {
-                    controls.aiControls.move('40', ai);
-                };
+                if (ballsArray[ballToControl]) {
+                    if (aiMiddle < ballsArray[ballToControl].y) {
+                        controls.aiControls.move('40', ai);
+                    };
 
-                if (aiMiddle > ballsArray[ballToControl].y) {
-                    controls.aiControls.move('38', ai);
-                };
+                    if (aiMiddle > ballsArray[ballToControl].y) {
+                        controls.aiControls.move('38', ai);
+                    };
 
-                if (aiMiddle === ballsArray[ballToControl].y) {
-                    ai.defaultSpeedModifier = aiPaddlesData.aiOnePaddleData.defaultSpeedModifier;
+                    if (aiMiddle === ballsArray[ballToControl].y) {
+                        ai.defaultSpeedModifier = aiPaddlesData.aiOnePaddleData.defaultSpeedModifier;
+                    };
                 };
             };
+
+            // controls.aiControls.drawTarget(ai, aiMiddle, ballToControl, ai.color);
         },
 
-        findTheBallThatHasSeconsMinimumDistanceToRightSide: function (ballsArray) {
-            let distancesFromBallsToRightSide = [];
-
-            for (let i = 0; i < ballsArray.length; i++) {
-                distancesFromBallsToRightSide[i] = canvas.width - ballsArray[i].x;
-            };
-
-            let sortedDistancesFromBallsToRightSide = helper.sortArray(distancesFromBallsToRightSide);
-            let ballThatHasSecondMinimumDistanceToRightSide;
-
-            for (let i = 0; i < distancesFromBallsToRightSide.length; i++) {
-                if (distancesFromBallsToRightSide[i] === sortedDistancesFromBallsToRightSide[1]) {
-                    ballThatHasSecondMinimumDistanceToRightSide = i;
-                };
-            };
-
-            return ballThatHasSecondMinimumDistanceToRightSide;
-        },
+        /*-------------------------------------------------------------------------------------------------------------*/
 
         findTheBallThatHasSecondMinimumDistanceToAI: function (ballsArray, ai) {
+            if (ballsArray.length === 0 || !ai) {
+                return 0;
+            };
+
             let distancesFromBallsToAI = [];
 
             for (let i = 0; i < ballsArray.length; i++) {
@@ -999,84 +1384,206 @@ let controls = {
             };
 
             let sortedDistancesFromBallsToAI = helper.sortArray(distancesFromBallsToAI);
-            let ballThatHasSecondMinimumDistanceToAI;
 
             for (let i = 0; i < distancesFromBallsToAI.length; i++) {
                 if (distancesFromBallsToAI[i] === sortedDistancesFromBallsToAI[1]) {
-                    ballThatHasSecondMinimumDistanceToAI = i;
+                    return i;
+                };
+            };
+        },
+
+        findTheBallThatHasSecondMinimumDistanceToAIConsideringBallXDirection: function (ballsArray, ai) {
+            if (ballsArray.length === 0 || !ai) {
+                return 0;
+            };
+
+            let distancesFromBallsToAI = [];
+
+            for (let i = 0; i < ballsArray.length; i++) {
+                distancesFromBallsToAI[i] = Math.sqrt(Math.pow((ai.x - ballsArray[i].x), 2) + Math.pow((ai.y + (ai.height / 2) - ballsArray[i].y), 2));
+            };
+
+            let sortedDistancesFromBallsToAI = helper.sortArray(distancesFromBallsToAI);
+
+            for (let i = 1; i < sortedDistancesFromBallsToAI.length; i++) {
+                for (let j = 0; j < distancesFromBallsToAI.length; j++) {
+                    if (distancesFromBallsToAI[j] === sortedDistancesFromBallsToAI[i] && ballsArray[j].xSpeed > 0) {
+                        return j;
+                    };
                 };
             };
 
-            return ballThatHasSecondMinimumDistanceToAI;
+            return controls.aiControls.findTheBallThatHasSecondMinimumDistanceToAI(ballsArray, ai);
+        },
+
+        findTheBallThatHasSeconsMinimumDistanceToRightSide: function (ballsArray) {
+            if (ballsArray.length === 0) {
+                return 0;
+            };
+
+            let distancesFromBallsToRightSide = [];
+
+            for (let i = 0; i < ballsArray.length; i++) {
+                distancesFromBallsToRightSide[i] = canvas.width - ballsArray[i].x;
+            };
+
+            let sortedDistancesFromBallsToRightSide = helper.sortArray(distancesFromBallsToRightSide);
+
+            for (let i = 0; i < distancesFromBallsToRightSide.length; i++) {
+                if (distancesFromBallsToRightSide[i] === sortedDistancesFromBallsToRightSide[1]) {
+                    return i;
+                };
+            };
+        },
+
+        findTheBallThatHasSeconsMinimumDistanceToRightSideConsideringBallXDirection: function (ballsArray) {
+            if (ballsArray.length === 0) {
+                return 0;
+            };
+
+            let distancesFromBallsToRightSide = [];
+
+            for (let i = 0; i < ballsArray.length; i++) {
+                distancesFromBallsToRightSide[i] = canvas.width - ballsArray[i].x;
+            };
+
+            let sortedDistancesFromBallsToRightSide = helper.sortArray(distancesFromBallsToRightSide);
+
+            for (let i = 1; i < sortedDistancesFromBallsToRightSide.length; i++) {
+                for (let j = 0; j < distancesFromBallsToRightSide.length; j++) {
+                    if (distancesFromBallsToRightSide[j] === sortedDistancesFromBallsToRightSide[i] && ballsArray[j].xSpeed > 0) {
+                        return j;
+                    };
+                };
+            };
+
+            return controls.aiControls.findTheBallThatHasSeconsMinimumDistanceToRightSide(ballsArray);
         },
 
         updateAiControlsTwo: function (aiOne, aiTwo) {
             let aiMiddle = aiOne.y + (aiOne.height / 2);
+            let ballToControl;
 
             if (game.ballCountOption > 1) {
-                let ballToControl;
-
                 switch (game.aiDifficulty) {
                     case 1:
                         ballToControl = controls.aiControls.findTheBallThatHasSecondMinimumDistanceToAI(ballsArray, aiOne);
+
+                        if (ballsArray.length > 2) {
+                            aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed;
+                        } else if (ballsArray.length === 1) {
+                            aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed - 4;
+                        } else if (ballsArray.length === 2) {
+                            aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed - 4;
+                        };
+
                         break;
 
                     case 2:
-                        ballToControl = controls.aiControls.findTheBallThatHasSecondMinimumDistanceToAI(ballsArray, aiOne);
+                        ballToControl = controls.aiControls.findTheBallThatHasSecondMinimumDistanceToAIConsideringBallXDirection(ballsArray, aiOne);
+
+                        if (ballsArray.length > 2) {
+                            aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed - 1;
+                        } else if (ballsArray.length === 1) {
+                            aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed - 4;
+                        } else if (ballsArray.length === 2) {
+                            aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed - 3;
+                        };
+
                         break;
 
                     case 3:
+                        ballToControl = controls.aiControls.findTheBallThatHasSecondMinimumDistanceToAIConsideringBallXDirection(ballsArray, aiOne);
+
+                        if (ballsArray.length > 2) {
+                            aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed + 3;
+                        } else if (ballsArray.length === 1) {
+                            aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed - 3;
+                        } else if (ballsArray.length === 2) {
+                            aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed - 1.5;
+                        };
+
+                        break;
+
+                    case 4:
                         ballToControl = controls.aiControls.findTheBallThatHasSeconsMinimumDistanceToRightSide(ballsArray);
+
+                        if (ballsArray.length > 2) {
+                            aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed + 1;
+                        } else if (ballsArray.length === 1) {
+                            aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed - 3;
+                        } else if (ballsArray.length === 2) {
+                            aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed - 1.5;
+                        };
+
+                        break;
+
+                    case 5:
+                        ballToControl = controls.aiControls.findTheBallThatHasSeconsMinimumDistanceToRightSideConsideringBallXDirection(ballsArray);
+
+                        if (ballsArray.length > 2) {
+                            aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed;
+                        } else if (ballsArray.length === 1) {
+                            aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed - 2;
+                        } else if (ballsArray.length === 2) {
+                            aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed - 1;
+                        };
+
                         break;
 
                     default:
                         break;
                 };
 
-                console.log(ballToControl);
+                if (ballsArray[ballToControl]) {
+                    if (aiMiddle < ballsArray[ballToControl].y) {
+                        controls.aiControls.move('40', aiOne);
+                    };
 
-                if (!ballToControl) {
-                    ballToControl = 1;
-                };
+                    if (aiMiddle > ballsArray[ballToControl].y) {
+                        controls.aiControls.move('38', aiOne);
+                    };
 
-                if (aiMiddle < ballsArray[ballToControl].y) {
-                    controls.aiControls.move('40', aiOne);
-                };
-
-                if (aiMiddle > ballsArray[ballToControl].y) {
-                    controls.aiControls.move('38', aiOne);
-                };
-
-                if (aiMiddle === ballsArray[ballToControl].y) {
-                    aiOne.defaultSpeedModifier = aiPaddlesData.aiTwoPaddleData.defaultSpeedModifier;
+                    if (aiMiddle === ballsArray[ballToControl].y) {
+                        aiOne.defaultSpeedModifier = aiPaddlesData.aiTwoPaddleData.defaultSpeedModifier;
+                    };
                 };
 
             } else if (game.ballCountOption === 1) {
 
-                if (aiMiddle < ballsArray[0].y) {
-                    controls.aiControls.move('40', aiOne);
-                };
+                ballToControl = 0;
+                aiOne.speed = aiPaddlesData.aiTwoPaddleData.speed;
 
-                if (aiMiddle > ballsArray[0].y) {
-                    controls.aiControls.move('38', aiOne);
-                };
+                if (ballsArray[0]) {
+                    if (aiMiddle < ballsArray[ballToControl].y) {
+                        controls.aiControls.move('40', aiOne);
+                    };
 
-                if (aiMiddle === ballsArray[0].y) {
-                    aiOne.defaultSpeedModifier = aiPaddlesData.aiTwoPaddleData.defaultSpeedModifier;
-                };
+                    if (aiMiddle > ballsArray[ballToControl].y) {
+                        controls.aiControls.move('38', aiOne);
+                    };
 
-                let aiTwoBottom = aiOne.y + aiOne.height;
-                let aiOneTop = aiTwo.y;
+                    if (aiMiddle === ballsArray[ballToControl].y) {
+                        aiOne.defaultSpeedModifier = aiPaddlesData.aiTwoPaddleData.defaultSpeedModifier;
+                    };
 
-                if ((aiOneTop - aiTwoBottom) <= 150) {
-                    controls.aiControls.move('38', aiOne);
-                };
+                    let aiTwoBottom = aiOne.y + aiOne.height;
+                    let aiOneTop = aiTwo.y;
 
-                if ((aiOneTop - aiTwoBottom) <= (-1 * aiOne.speed)) {
-                    controls.aiControls.move('40', aiTwo);
+                    if ((aiOneTop - aiTwoBottom) <= 150) {
+                        controls.aiControls.move('38', aiOne);
+                    };
+
+                    if ((aiOneTop - aiTwoBottom) <= (-1 * aiOne.speed)) {
+                        controls.aiControls.move('40', aiTwo);
+                    };
                 };
             };
+
+            // controls.aiControls.drawTarget(aiOne, aiMiddle, ballToControl, aiOne.color);
         },
+
+        /*-------------------------------------------------------------------------------------------------------------*/
 
         reset: function (ai) {
             if (game.playersModeOption === 11 || game.playersModeOption === 21) {
@@ -1096,7 +1603,7 @@ let controls = {
             for (let i = 0; i < balls.length; i++) {
                 balls[i].x = ballData.xPosition + Math.random();
                 balls[i].y = ballData.yPosition + Math.random();
-                balls[i].radius = helper.getRandomNumberFromRange(7, 10);
+                balls[i].radius = helper.getRandomNumberFromRange(11, 13);
                 balls[i].xSpeed = helper.getRandomNumberFromLowerBoundToMinusOneOrFromOneToUpperBound(-3, 3);
                 balls[i].ySpeed = helper.getRandomNumberFromLowerBoundToZeroOrFromZeroToUpperBound(-3, 3);
                 balls[i].color = helper.getRandomColor();
@@ -1128,7 +1635,7 @@ let render = {
         ctx.fillStyle = color;
         ctx.fill();
 
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.strokeStyle = strokeColor;
         ctx.stroke();
     },
@@ -1153,6 +1660,10 @@ let render = {
             if (paddles[i]) {
                 ctx.globalCompositeOperation = 'source-over';
                 this.renderPaddle(paddles[i], paddlesColors[i], paddlesStrokeColors[i]);
+
+                // ctx.font = '30px serif';
+                // ctx.fillStyle = 'white';
+                // ctx.fillText(i, paddles[i].x, paddles[i].y + (paddles[i].height / 2));
             };
         };
 
@@ -1161,9 +1672,27 @@ let render = {
                 ctx.globalCompositeOperation = 'source-over';
                 this.renderBall(balls[i], balls[i].color, balls[i].strokeColor);
 
-                // ctx.font = '30px serif';
+                ctx.font = '30px serif';
                 // ctx.fillStyle = 'white';
                 // ctx.fillText(i, balls[i].x, balls[i].y);
+
+                // if (balls[i].xSpeed > 0) {
+                //     ctx.fillStyle = 'white';
+                //     ctx.fillText('#' + i + ` I'm good ` + (canvas.width - balls[i].x), balls[i].x, balls[i].y);
+                // };
+
+                // if (balls[i].xSpeed < 0) {
+                //     ctx.fillStyle = 'red';
+                //     ctx.fillText('#' + i + ` I'm bad ` + (canvas.width - balls[i].x), balls[i].x, balls[i].y);
+                // };
+
+                // ctx.beginPath();
+                // ctx.moveTo(balls[i].x, balls[i].y);
+                // ctx.lineTo(balls[i].x + balls[i].xSpeed * 20, balls[i].y + balls[i].ySpeed * 20);
+                // ctx.strokeStyle = 'white';
+                // ctx.lineWidth = 3;
+                // ctx.stroke();
+                // ctx.closePath();
             };
         };
     }
@@ -1172,7 +1701,7 @@ let render = {
 /*-------------------------------------------------------------------------------------------------------------*/
 
 let audio = {
-    volume: 0.3,
+    volume: 0.01,
 
     generateDefaultHitSound: function () {
         return new Audio('./src/sounds/mixkit-arcade-retro-changing-tab-206.wav');
@@ -1199,6 +1728,8 @@ let audio = {
     },
 
     backgroundMusic: new Audio('./src/music/mixkit-game-level-music-689.wav'),
+
+    isBackgroundMusicPaused: false,
 
     playSound: function (sound) {
         sound.volume = audio.volume;

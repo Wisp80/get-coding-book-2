@@ -119,7 +119,9 @@ body {
 .best-of-nine-button,
 .easy-ai-button,
 .normal-ai-button,
-.hard-ai-button {
+.hard-ai-button,
+.very-hard-ai-button,
+.impossible-ai-button {
     font-family: Calibri;
     font-size: 16px;
     margin-top: 12px;
@@ -196,7 +198,8 @@ body {
 }
 
 .mainframe-restart-button,
-.mainframe-go-to-menu-button {
+.mainframe-go-to-menu-button,
+.mainframe-pause-the-game {
     font-family: Calibri;
     font-size: 20px;
     margin: 5px;

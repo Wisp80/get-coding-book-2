@@ -27,9 +27,9 @@
                 </div>
 
                 <div class='music-settings-container'>
-                    <p class='music-settings-container-text'>Volume 🔊</p>
+                    <p class='music-settings-container-text'>Volume 🎶</p>
 
-                    <input type='range' min='0' max='1' step='0.01' value='0.3' onchange='ui.changeVolume(this)'>
+                    <input type='range' min='0' max='1' step='0.01' value='0.01' onchange='ui.changeVolume(this)'>
                 </div>
             </div>
 
@@ -59,6 +59,8 @@
                     <button class='easy-ai-button' onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Easy 🤡</button>
                     <button class='normal-ai-button' onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Normal 🍻</button>
                     <button class='hard-ai-button' onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Hard 💀</button>
+                    <button class='very-hard-ai-button' onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Very Hard 😈</button>
+                    <button class='impossible-ai-button' onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Impossible 👽</button>
                 </div>
 
                 <div class='best-of-mode-container'>
@@ -102,6 +104,7 @@
             <div class='mainframe-menu-buttons-container'>
                 <button class='mainframe-restart-button' onclick='ui.restart()'>Restart</button>
                 <button class='mainframe-go-to-menu-button' onclick='ui.goToMainMenuFromMainframe()'>Menu</button>
+                <button class='mainframe-pause-the-game' onclick='ui.pauseTheGame();'>Pause</button>
             </div>
         </div>
 
