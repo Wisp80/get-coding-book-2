@@ -10,10 +10,10 @@
 
 <body>
     <div class='game-container'>
-        <div class='start-screen'>
+        <div class='start-screen default-picture'>
 
             <div class='gametitle-text-container'>
-                <p class='gametitle-text'>Настольный теннис</p>
+                <p class='gametitle-text'>Table Tennis</p>
             </div>
 
             <div class='themes-music-settings-container'>
@@ -21,15 +21,15 @@
                     <p class='themes-container-text'>Themes 🎴</p>
 
                     <div class='themes-music-settings-buttons-container'>
-                        <button class='classic-theme-button'>Default</button>
-                        <button class='sonic-theme-button'>Sonic</button>
+                        <button class='classic-theme-button highlighted-button' onclick='ui.changeTheme(this)'>Default</button>
+                        <button class='sonic-theme-button' onclick='ui.changeTheme(this)'>Sonic</button>
                     </div>
                 </div>
 
                 <div class='music-settings-container'>
                     <p class='music-settings-container-text'>Volume 🎶</p>
 
-                    <input type='range' min='0' max='1' step='0.01' value='0.01' onchange='ui.changeVolume(this)'>
+                    <input type='range' min='0' max='1' step='0.01' value='0.05' onchange='ui.changeVolume(this)'>
                 </div>
             </div>
 

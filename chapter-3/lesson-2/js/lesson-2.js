@@ -89,6 +89,7 @@ let game = {
     playersModeOption: 11,
     ballCountOption: 3,
     aiDifficulty: 1,
+    theme: 'default',
     playersWins: 0,
     aiWins: 0,
     tickTimeout: null,
@@ -129,7 +130,8 @@ let game = {
                     [players.playerOne, ai.aiOne],
                     ballsArray,
                     [players.playerOne.color, ai.aiOne.color],
-                    [players.playerOne.strokeColor, ai.aiOne.strokeColor]
+                    [players.playerOne.strokeColor, ai.aiOne.strokeColor],
+                    [players.playerOne.paddleImage, ai.aiOne.paddleImage]
                 );
                 break;
 
@@ -138,7 +140,8 @@ let game = {
                     [players.playerOne, ai.aiOne, ai.aiTwo],
                     ballsArray,
                     [players.playerOne.color, ai.aiOne.color, ai.aiTwo.color],
-                    [players.playerOne.strokeColor, ai.aiOne.strokeColor, ai.aiTwo.strokeColor]
+                    [players.playerOne.strokeColor, ai.aiOne.strokeColor, ai.aiTwo.strokeColor],
+                    [players.playerOne.paddleImage, ai.aiOne.paddleImage, ai.aiTwo.paddleImage]
                 );
                 break;
 
@@ -147,7 +150,8 @@ let game = {
                     [players.playerOne, players.playerTwo, ai.aiOne],
                     ballsArray,
                     [players.playerOne.color, players.playerTwo.color, ai.aiOne.color],
-                    [players.playerOne.strokeColor, players.playerTwo.strokeColor, ai.aiOne.strokeColor]
+                    [players.playerOne.strokeColor, players.playerTwo.strokeColor, ai.aiOne.strokeColor],
+                    [players.playerOne.paddleImage, players.playerTwo.paddleImage, ai.aiOne.paddleImage]
                 );
                 break;
 
@@ -156,7 +160,8 @@ let game = {
                     [players.playerOne, players.playerTwo, ai.aiOne, ai.aiTwo],
                     ballsArray,
                     [players.playerOne.color, players.playerTwo.color, ai.aiOne.color, ai.aiTwo.color],
-                    [players.playerOne.strokeColor, players.playerTwo.strokeColor, ai.aiOne.strokeColor, ai.aiTwo.strokeColor]
+                    [players.playerOne.strokeColor, players.playerTwo.strokeColor, ai.aiOne.strokeColor, ai.aiTwo.strokeColor],
+                    [players.playerOne.paddleImage, players.playerTwo.paddleImage, ai.aiOne.paddleImage, ai.aiTwo.paddleImage]
                 );
                 break;
 
@@ -165,7 +170,8 @@ let game = {
                     [players.playerOne, players.playerTwo],
                     ballsArray,
                     [players.playerOne.color, players.playerTwo.color],
-                    [players.playerOne.strokeColor, players.playerTwo.strokeColor]
+                    [players.playerOne.strokeColor, players.playerTwo.strokeColor],
+                    [players.playerOne.paddleImage, players.playerTwo.paddleImage]
                 );
                 break;
 
@@ -215,7 +221,8 @@ let game = {
                 playersPaddlesData.playerTwoPaddleData.increasedSpeedModifier,
                 playersPaddlesData.playerTwoPaddleData.speed,
                 playersPaddlesData.playerTwoPaddleData.color,
-                playersPaddlesData.playerTwoPaddleData.strokeColor
+                playersPaddlesData.playerTwoPaddleData.strokeColor,
+                playersPaddlesData.playerTwoPaddleData.paddleImage
             );
         };
 
@@ -229,7 +236,8 @@ let game = {
                 aiPaddlesData.aiTwoPaddleData.increasedSpeedModifier,
                 aiPaddlesData.aiTwoPaddleData.speed,
                 aiPaddlesData.aiTwoPaddleData.color,
-                aiPaddlesData.aiTwoPaddleData.strokeColor
+                aiPaddlesData.aiTwoPaddleData.strokeColor,
+                aiPaddlesData.aiTwoPaddleData.paddleImage
             );
         };
 
@@ -245,6 +253,7 @@ let game = {
                     aiPaddlesData.aiOnePaddleData.speed,
                     aiPaddlesData.aiOnePaddleData.color,
                     aiPaddlesData.aiOnePaddleData.strokeColor,
+                    aiPaddlesData.aiOnePaddleData.paddleImage
                 );
             };
         };
@@ -263,7 +272,8 @@ let game = {
                 playersPaddlesData.playerTwoPaddleData.increasedSpeedModifier,
                 playersPaddlesData.playerTwoPaddleData.speed,
                 playersPaddlesData.playerTwoPaddleData.color,
-                playersPaddlesData.playerTwoPaddleData.strokeColor
+                playersPaddlesData.playerTwoPaddleData.strokeColor,
+                playersPaddlesData.playerTwoPaddleData.paddleImage
             );
         };
 
@@ -273,7 +283,7 @@ let game = {
         ui.updateWinsInfoAndScoreText();
         ui.changeDisplay('start-screen', 'none');
         ui.changeDisplay('mainframe', 'flex');
-        audio.playSound(audio.backgroundMusic);
+        audio.playSound(audio.checkMusicTheme());
         game.tick();
     },
 
@@ -282,7 +292,7 @@ let game = {
             controls.ballsControls.freeze(ballsArray);
 
             ui.changeDisplay('mainframe', 'none');
-            audio.pauseSound(audio.backgroundMusic);
+            audio.pauseSound(audio.checkMusicTheme());
             ui.changeDisplay('gameover-container', 'flex');
             ui.updateWinsInfoAndScoreText();
             game.resetScore();
@@ -339,6 +349,27 @@ let ui = {
             document.getElementsByClassName('play-button')[0].disabled = false;
         } else {
             document.getElementsByClassName('play-button')[0].disabled = true;
+        };
+    },
+
+    changeTheme: function (el) {
+        ui.highlightElement(el, 'themes-music-settings-buttons-container');
+
+        switch (el.innerText) {
+            case 'Default':
+                game.theme = 'default';
+                document.getElementsByClassName('start-screen')[0].classList.remove('sonic-picture');
+                document.getElementsByClassName('start-screen')[0].classList.add('default-picture');
+                break;
+
+            case 'Sonic':
+                game.theme = 'sonic';
+                document.getElementsByClassName('start-screen')[0].classList.remove('default-picture');
+                document.getElementsByClassName('start-screen')[0].classList.add('sonic-picture');
+                break;
+
+            default:
+                break;
         };
     },
 
@@ -456,7 +487,7 @@ let ui = {
 
         ui.changeDisplay('gameover-container', 'none');
         ui.changeDisplay('mainframe', 'flex');
-        audio.playSound(audio.backgroundMusic);
+        audio.playSound(audio.checkMusicTheme());
     },
 
     goToMainMenuFromGameoverScreen: function () {
@@ -471,7 +502,7 @@ let ui = {
 
         ui.changeDisplay('start-screen', 'flex');
         ui.changeDisplay('mainframe', 'none');
-        audio.pauseSound(audio.backgroundMusic);
+        audio.pauseSound(audio.checkMusicTheme());
     },
 
     updateScore: function () {
@@ -497,7 +528,7 @@ let ui = {
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
-function Paddle(x, y, width, height, defaultSpeedModifier, increasedSpeedModifier, speed, color, strokeColor) {
+function Paddle(x, y, width, height, defaultSpeedModifier, increasedSpeedModifier, speed, color, strokeColor, paddleImage) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -507,6 +538,7 @@ function Paddle(x, y, width, height, defaultSpeedModifier, increasedSpeedModifie
     this.speed = speed;
     this.color = color;
     this.strokeColor = strokeColor;
+    this.paddleImage = paddleImage;
 
     this.hasCollidedWithTopWall = function (ball, hitbox) {
         let paddleLeftWall = this.x;
@@ -605,7 +637,8 @@ let playersPaddlesData = {
         increasedSpeedModifier: 0.7,
         speed: 9,
         color: helper.getRandomColor(),
-        strokeColor: helper.getRandomColor()
+        strokeColor: helper.getRandomColor(),
+        paddleImage: './src/images/paddles/01-0.png'
     },
 
     playerTwoPaddleData: {
@@ -617,7 +650,8 @@ let playersPaddlesData = {
         increasedSpeedModifier: 0.7,
         speed: 9,
         color: helper.getRandomColor(),
-        strokeColor: helper.getRandomColor()
+        strokeColor: helper.getRandomColor(),
+        paddleImage: './src/images/paddles/02-0.png'
     }
 };
 
@@ -632,6 +666,7 @@ let players = {
         playersPaddlesData.playerOnePaddleData.speed,
         playersPaddlesData.playerOnePaddleData.color,
         playersPaddlesData.playerOnePaddleData.strokeColor,
+        playersPaddlesData.playerOnePaddleData.paddleImage
     ),
 
     playerTwo: null
@@ -647,7 +682,8 @@ let aiPaddlesData = {
         increasedSpeedModifier: 0.7,
         speed: 6,
         color: helper.getRandomColor(),
-        strokeColor: helper.getRandomColor()
+        strokeColor: helper.getRandomColor(),
+        paddleImage: './src/images/paddles/01-X.png'
     },
 
     aiTwoPaddleData: {
@@ -659,7 +695,8 @@ let aiPaddlesData = {
         increasedSpeedModifier: 0.7,
         speed: 6,
         color: helper.getRandomColor(),
-        strokeColor: helper.getRandomColor()
+        strokeColor: helper.getRandomColor(),
+        paddleImage: './src/images/paddles/02-X.png'
     }
 };
 
@@ -673,7 +710,8 @@ let ai = {
         aiPaddlesData.aiOnePaddleData.increasedSpeedModifier,
         aiPaddlesData.aiOnePaddleData.speed,
         aiPaddlesData.aiOnePaddleData.color,
-        aiPaddlesData.aiOnePaddleData.strokeColor
+        aiPaddlesData.aiOnePaddleData.strokeColor,
+        aiPaddlesData.aiOnePaddleData.paddleImage
     ),
 
     aiTwo: null
@@ -877,32 +915,41 @@ function Ball(x, y, radius, xSpeed, ySpeed, color, strokeColor) {
     this.checkCollisionWithLeftAndRightBalls = function (hitbox, safespace) {
         let collidedWithPlayerOneRightWall = false;
         let collidedWithPlayerTwoRightWall = false;
+        let collidedWithAiOneRightWall = false;
+        let collidedWithAiTwoRightWall = false;
+
+        let collidedWithPlayerOneLeftWall = false;
+        let collidedWithPlayerTwoLeftWall = false;
         let collidedWithAiOneLeftWall = false;
         let collidedWithAiTwoLeftWall = false;
 
         collidedWithPlayerOneRightWall = players.playerOne.hasCollidedWithRightWall(this, hitbox);
+        collidedWithPlayerOneLeftWall = players.playerOne.hasCollidedWithLeftWall(this, hitbox);
 
         if (players.playerTwo !== null) {
             collidedWithPlayerTwoRightWall = players.playerTwo.hasCollidedWithRightWall(this, hitbox);
+            collidedWithPlayerTwoLeftWall = players.playerTwo.hasCollidedWithLeftWall(this, hitbox);
         };
 
         if (ai.aiOne !== null) {
+            collidedWithAiOneRightWall = ai.aiOne.hasCollidedWithRightWall(this, hitbox);
             collidedWithAiOneLeftWall = ai.aiOne.hasCollidedWithLeftWall(this, hitbox);
         };
 
         if (ai.aiTwo !== null) {
+            collidedWithAiTwoRightWall = ai.aiTwo.hasCollidedWithRightWall(this, hitbox);
             collidedWithAiTwoLeftWall = ai.aiTwo.hasCollidedWithLeftWall(this, hitbox);
         };
 
-        if (collidedWithPlayerOneRightWall) {
+        if (collidedWithPlayerOneRightWall || collidedWithPlayerOneLeftWall) {
             this.increaseSpeed('38', '40', players.playerOne);
         };
 
-        if (collidedWithPlayerTwoRightWall) {
+        if (collidedWithPlayerTwoRightWall || collidedWithPlayerTwoLeftWall) {
             this.increaseSpeed('83', '87', players.playerTwo);
         };
 
-        if (collidedWithAiOneLeftWall) {
+        if (collidedWithAiOneLeftWall || collidedWithAiOneRightWall) {
             if (ai.aiOne.defaultSpeedModifier === 0.5) {
                 audio.playSound(audio.generateDefaultHitSound());
             } else {
@@ -913,7 +960,7 @@ function Ball(x, y, radius, xSpeed, ySpeed, color, strokeColor) {
             this.modifyYSpeedBy(ai.aiOne.defaultSpeedModifier);
         };
 
-        if (collidedWithAiTwoLeftWall) {
+        if (collidedWithAiTwoLeftWall || collidedWithAiTwoRightWall) {
             if (ai.aiTwo.defaultSpeedModifier === 0.5) {
                 audio.playSound(audio.generateDefaultHitSound());
             } else {
@@ -928,19 +975,48 @@ function Ball(x, y, radius, xSpeed, ySpeed, color, strokeColor) {
             this.x = playersPaddlesData.playerOnePaddleData.xPosition + playersPaddlesData.playerOnePaddleData.width + safespace;
         };
 
-        if (collidedWithPlayerTwoRightWall) {
-            this.x = playersPaddlesData.playerTwoPaddleData.xPosition + playersPaddlesData.playerTwoPaddleData.width + safespace;
+        if (collidedWithPlayerOneLeftWall) {
+            this.x = playersPaddlesData.playerOnePaddleData.xPosition - safespace;
+        };
+
+        if (game.playersModeOption === 33) {
+            if (collidedWithPlayerTwoRightWall) {
+                this.x = aiPaddlesData.aiOnePaddleData.xPosition + playersPaddlesData.playerTwoPaddleData.width + safespace;
+            };
+
+            if (collidedWithPlayerTwoLeftWall) {
+                this.x = aiPaddlesData.aiOnePaddleData.xPosition - safespace;
+            };
+
+        } else {
+
+            if (collidedWithPlayerTwoRightWall) {
+                this.x = playersPaddlesData.playerTwoPaddleData.xPosition + playersPaddlesData.playerTwoPaddleData.width + safespace;
+            };
+
+            if (collidedWithPlayerTwoLeftWall) {
+                this.x = playersPaddlesData.playerTwoPaddleData.xPosition - safespace;
+            };
         };
 
         if (collidedWithAiOneLeftWall) {
-            this.x = aiPaddlesData.aiTwoPaddleData.xPosition - safespace;
+            this.x = aiPaddlesData.aiOnePaddleData.xPosition - safespace;
+        };
+
+        if (collidedWithAiOneRightWall) {
+            this.x = aiPaddlesData.aiOnePaddleData.xPosition + aiPaddlesData.aiOnePaddleData.width + safespace;
         };
 
         if (collidedWithAiTwoLeftWall) {
             this.x = aiPaddlesData.aiTwoPaddleData.xPosition - safespace;
         };
 
-        if (collidedWithPlayerOneRightWall || collidedWithPlayerTwoRightWall || collidedWithAiOneLeftWall || collidedWithAiTwoLeftWall) {
+        if (collidedWithAiTwoRightWall) {
+            this.x = aiPaddlesData.aiTwoPaddleData.xPosition + aiPaddlesData.aiTwoPaddleData.width + safespace;
+        };
+
+        if (collidedWithPlayerOneRightWall || collidedWithPlayerOneLeftWall || collidedWithPlayerTwoRightWall || collidedWithPlayerTwoLeftWall
+            || collidedWithAiOneLeftWall || collidedWithAiOneRightWall || collidedWithAiTwoLeftWall || collidedWithAiTwoRightWall) {
             this.reverseX();
         };
     };
@@ -1628,16 +1704,32 @@ let render = {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     },
 
-    renderPaddle: function (paddle, color, strokeColor) {
-        ctx.beginPath();
-        ctx.rect(paddle.x, paddle.y, paddle.width, paddle.height);
+    renderPaddle: function (paddle, color, strokeColor, paddleImage) {
+        if (game.theme === 'default') {
+            ctx.beginPath();
+            ctx.rect(paddle.x, paddle.y, paddle.width, paddle.height);
 
-        ctx.fillStyle = color;
-        ctx.fill();
+            ctx.fillStyle = color;
+            ctx.fill();
 
-        ctx.lineWidth = 2.5;
-        ctx.strokeStyle = strokeColor;
-        ctx.stroke();
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = strokeColor;
+            ctx.stroke();
+        } else if (game.theme === 'sonic') {
+            ctx.beginPath();
+            ctx.rect(paddle.x, paddle.y, paddle.width, paddle.height);
+
+            ctx.fillStyle = color;
+            ctx.fill();
+
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = strokeColor;
+            ctx.stroke();
+
+            let image = new Image(28, 28);
+            image.src = paddleImage;
+            ctx.drawImage(image, paddle.x + 1, paddle.y + (paddle.height - image.width) / 2, image.width, image.height);
+        };
     },
 
     renderBall: function (ball, color, strokeColor) {
@@ -1652,14 +1744,14 @@ let render = {
         ctx.stroke();
     },
 
-    draw: function (paddles, balls, paddlesColors, paddlesStrokeColors) {
+    draw: function (paddles, balls, paddlesColors, paddlesStrokeColors, paddlesImages) {
         ctx.globalCompositeOperation = 'source-over';
         this.renderField();
 
         for (let i = 0; i < paddles.length; i++) {
             if (paddles[i]) {
                 ctx.globalCompositeOperation = 'source-over';
-                this.renderPaddle(paddles[i], paddlesColors[i], paddlesStrokeColors[i]);
+                this.renderPaddle(paddles[i], paddlesColors[i], paddlesStrokeColors[i], paddlesImages[i]);
 
                 // ctx.font = '30px serif';
                 // ctx.fillStyle = 'white';
@@ -1701,35 +1793,90 @@ let render = {
 /*-------------------------------------------------------------------------------------------------------------*/
 
 let audio = {
-    volume: 0.01,
+    volume: 0.05,
 
     generateDefaultHitSound: function () {
-        return new Audio('./src/sounds/mixkit-arcade-retro-changing-tab-206.wav');
+        switch (game.theme) {
+            case 'default':
+                return new Audio('./src/sounds/default-sounds/default-hit-sound-default.wav');
+
+            case 'sonic':
+                return new Audio('./src/sounds/sonic-sounds/default-hit-sound-sonic.mp3');
+
+            default:
+                break;
+        };
     },
 
     generateIncreasedHitSound: function () {
-        return new Audio('./src/sounds/mixkit-arcade-mechanical-bling-210.wav');
+        switch (game.theme) {
+            case 'default':
+                return new Audio('./src/sounds/default-sounds/increased-hit-sound-default.wav');
+
+            case 'sonic':
+                return new Audio('./src/sounds/sonic-sounds/increased-hit-sound-sonic.mp3');
+
+            default:
+                break;
+        };
     },
 
     generateScoreSound: function () {
-        return new Audio('./src/sounds/mixkit-arcade-video-game-bonus-2044.wav');
+        switch (game.theme) {
+            case 'default':
+                return new Audio('./src/sounds/default-sounds/score-sound-default.wav');
+
+            case 'sonic':
+                return new Audio('./src/sounds/sonic-sounds/score-sound-sonic.mp3');
+
+            default:
+                break;
+        };
     },
 
     generateLoseSound: function () {
-        return new Audio('./src/sounds/mixkit-arcade-space-shooter-dead-notification-272.wav');
+        switch (game.theme) {
+            case 'default':
+                return new Audio('./src/sounds/default-sounds/lose-sound-default.wav');
+
+            case 'sonic':
+                return new Audio('./src/sounds/sonic-sounds/lose-sound-sonic.mp3');
+
+            default:
+                break;
+        };
     },
 
     generateWinSound: function () {
-        return new Audio('./src/sounds/mixkit-arcade-game-complete-or-approved-mission-205.wav');
+        switch (game.theme) {
+            case 'default':
+                return new Audio('./src/sounds/default-sounds/win-sound-default.wav');
+
+            case 'sonic':
+                return new Audio('./src/sounds/sonic-sounds/win-sound-sonic.mp3');
+
+            default:
+                break;
+        };
     },
 
-    generateBackgroundMusic: function () {
-        return new Audio('./src/music/mixkit-game-level-music-689.wav');
-    },
-
-    backgroundMusic: new Audio('./src/music/mixkit-game-level-music-689.wav'),
+    defaultBackgroundMusic: new Audio('./src/music/music-default.wav'),
+    sonicBackgroundMusic: new Audio('./src/music/music-sonic.mp3'),
 
     isBackgroundMusicPaused: false,
+
+    checkMusicTheme: function () {
+        switch (game.theme) {
+            case 'default':
+                return audio.defaultBackgroundMusic;
+
+            case 'sonic':
+                return audio.sonicBackgroundMusic;
+
+            default:
+                break;
+        };
+    },
 
     playSound: function (sound) {
         sound.volume = audio.volume;
@@ -1737,12 +1884,16 @@ let audio = {
     },
 
     pauseSound: function (sound) {
+        audio.sonicBackgroundMusic.currentTime = 0;
+        audio.defaultBackgroundMusic.currentTime = 0;
+
         sound.volume = audio.volume;
         sound.pause();
     },
 
     initiateBackgroudMusicLooping: function () {
-        audio.backgroundMusic.loop = true;
+        audio.defaultBackgroundMusic.loop = true;
+        audio.sonicBackgroundMusic.loop = true;
     }
 };
 

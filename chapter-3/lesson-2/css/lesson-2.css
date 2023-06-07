@@ -238,3 +238,13 @@ body {
     margin-left: 10px;
     margin-right: 10px;
 }
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
+.default-picture {
+    background: url('../src/images/backgrounds/background-image-default.png');
+}
+
+.sonic-picture {
+    background: url('../src/images/backgrounds/background-image-sonic.png');
+}
