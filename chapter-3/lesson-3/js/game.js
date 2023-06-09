@@ -203,6 +203,7 @@ let game = {
 
     defineWinner: function () {
         if (game.aiWins >= (game.bestOfOption + 1) / 2 || game.playersWins >= (game.bestOfOption + 1) / 2) {
+            controls.ballsControls.reset(ballsArray);
             controls.ballsControls.freeze(ballsArray);
 
             ui.changeDisplay('mainframe', 'none');

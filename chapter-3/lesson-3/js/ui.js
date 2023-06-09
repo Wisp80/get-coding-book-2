@@ -183,6 +183,7 @@ let ui = {
     },
 
     goToMainMenuFromGameoverScreen: function () {
+        controls.ballsControls.reset(ballsArray);
         controls.ballsControls.freeze(ballsArray);
 
         ui.changeDisplay('start-screen', 'flex');
@@ -190,6 +191,7 @@ let ui = {
     },
 
     goToMainMenuFromMainframe: function () {
+        controls.ballsControls.reset(ballsArray);
         controls.ballsControls.freeze(ballsArray);
 
         ui.changeDisplay('start-screen', 'flex');
