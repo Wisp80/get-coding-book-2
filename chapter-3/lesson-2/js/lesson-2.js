@@ -1,8 +1,6 @@
 let canvas = document.getElementsByClassName('canvas')[0];
 let ctx = canvas.getContext('2d');
 
-document.getElementsByClassName('play-button')[0].disabled = true;
-
 /*-------------------------------------------------------------------------------------------------------------*/
 
 let helper = {
@@ -319,6 +317,11 @@ let ui = {
     },
 
     highlightElement: function (el, parentContainerClass) {
+        if (el.classList.contains('highlighted-button')) {
+            el.classList.remove('highlighted-button');
+            return;
+        };
+
         el.classList.add('highlighted-button');
 
         for (let i = 0; i < document.getElementsByClassName(parentContainerClass)[0].children.length; i++) {
@@ -345,7 +348,9 @@ let ui = {
             + ui.countHighlightedButtons('ai-difficulty-container')
             + ui.countHighlightedButtons('best-of-mode-container');
 
-        if (highlightedMainSettingsButtonsCount === 3) {
+        if (highlightedMainSettingsButtonsCount === 3 ||
+            (document.getElementsByClassName('one-player-vs-one-player-button')[0].classList.contains('highlighted-button') &&
+                ui.countHighlightedButtons('best-of-mode-container') === 1)) {
             document.getElementsByClassName('play-button')[0].disabled = false;
         } else {
             document.getElementsByClassName('play-button')[0].disabled = true;

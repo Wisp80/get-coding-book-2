@@ -21,7 +21,8 @@
                     <p class='themes-container-text'>Themes 🎴</p>
 
                     <div class='themes-music-settings-buttons-container'>
-                        <button class='classic-theme-button highlighted-button' onclick='ui.changeTheme(this)'>Default</button>
+                        <button class='classic-theme-button highlighted-button'
+                            onclick='ui.changeTheme(this)'>Default</button>
                         <button class='sonic-theme-button' onclick='ui.changeTheme(this)'>Sonic</button>
                     </div>
                 </div>
@@ -56,11 +57,16 @@
                 <div class='ai-difficulty-container'>
                     <p class='ai-difficulty-container-text'>AI difficulty 🤖</p>
 
-                    <button class='easy-ai-button' onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Easy 🤡</button>
-                    <button class='normal-ai-button' onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Normal 🍻</button>
-                    <button class='hard-ai-button' onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Hard 💀</button>
-                    <button class='very-hard-ai-button' onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Very Hard 😈</button>
-                    <button class='impossible-ai-button' onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Impossible 👽</button>
+                    <button class='easy-ai-button'
+                        onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Easy 🤡</button>
+                    <button class='normal-ai-button'
+                        onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Normal 🍻</button>
+                    <button class='hard-ai-button'
+                        onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Hard 💀</button>
+                    <button class='very-hard-ai-button'
+                        onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Very Hard 😈</button>
+                    <button class='impossible-ai-button'
+                        onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Impossible 👽</button>
                 </div>
 
                 <div class='best-of-mode-container'>
@@ -85,14 +91,14 @@
                 <div class='ball-count-buttons-container'>
                     <button class='decrease-ball-count-button' onclick='ui.specifyBallCountOption(this)'>-1</button>
 
-                    <div class='ball-count'>1</div>
+                    <div class='ball-count'>3</div>
 
                     <button class='increase-ball-count-button' onclick='ui.specifyBallCountOption(this)'>+1</button>
                 </div>
             </div>
 
             <div class='play-button-container'>
-                <button class='play-button' onclick='game.startGame()'>Play</button>
+                <button class='play-button' disabled onclick='game.startGame()'>Play</button>
             </div>
         </div>
 
