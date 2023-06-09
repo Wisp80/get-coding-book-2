@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Настольный теннис</title>
+
+    <link rel='stylesheet' href='css/lesson-3.css'>
+</head>
+
+<body>
+    <div class='game-container'>
+        <div class='start-screen default-picture'>
+
+            <div class='gametitle-text-container'>
+                <p class='gametitle-text'>Table Tennis</p>
+            </div>
+
+            <div class='themes-music-settings-container'>
+                <div class='themes-container'>
+                    <p class='themes-container-text'>Themes 🎴</p>
+
+                    <div class='themes-music-settings-buttons-container'>
+                        <button class='classic-theme-button highlighted-button'
+                            onclick='ui.changeTheme(this)'>Default</button>
+                        <button class='sonic-theme-button' onclick='ui.changeTheme(this)'>Sonic</button>
+                    </div>
+                </div>
+
+                <div class='music-settings-container'>
+                    <p class='music-settings-container-text'>Volume 🎶</p>
+
+                    <input type='range' min='0' max='1' step='0.01' value='0.05' onchange='ui.changeVolume(this)'>
+                </div>
+            </div>
+
+            <div class='main-settings-container'>
+                <div class='players-mode-container'>
+                    <p class='players-mode-container-text'>Players mode 🏓</p>
+
+                    <button class='one-player-vs-one-ai-button'
+                        onclick='ui.choosePlayersModeOption(this); ui.enableDisablePlayButton();'>1P vs
+                        1AI</button>
+                    <button class='one-player-vs-two-ai-button'
+                        onclick='ui.choosePlayersModeOption(this); ui.enableDisablePlayButton();'>1P vs
+                        2AI</button>
+                    <button class='two-players-vs-one-ai-button'
+                        onclick='ui.choosePlayersModeOption(this); ui.enableDisablePlayButton();'>2P vs
+                        1AI</button>
+                    <button class='two-players-vs-two-ai-button'
+                        onclick='ui.choosePlayersModeOption(this); ui.enableDisablePlayButton();'>2P vs
+                        2AI</button>
+                    <button class='one-player-vs-one-player-button'
+                        onclick='ui.choosePlayersModeOption(this); ui.enableDisablePlayButton();'>PvP</button>
+                </div>
+
+                <div class='ai-difficulty-container'>
+                    <p class='ai-difficulty-container-text'>AI difficulty 🤖</p>
+
+                    <button class='easy-ai-button'
+                        onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Easy 🤡</button>
+                    <button class='normal-ai-button'
+                        onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Normal 🍻</button>
+                    <button class='hard-ai-button'
+                        onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Hard 💀</button>
+                    <button class='very-hard-ai-button'
+                        onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Very Hard 😈</button>
+                    <button class='impossible-ai-button'
+                        onclick='ui.chooseAIDifficulty(this); ui.enableDisablePlayButton();'>Impossible 👽</button>
+                </div>
+
+                <div class='best-of-mode-container'>
+                    <p class='best-of-mode-container-text'>Best of ❓</p>
+
+                    <button class='best-of-one-button'
+                        onclick='ui.chooseBestOfOption(this); ui.enableDisablePlayButton();'>Best of 1</button>
+                    <button class='best-of-three-button'
+                        onclick='ui.chooseBestOfOption(this); ui.enableDisablePlayButton();'>Best of 3</button>
+                    <button class='best-of-five-button'
+                        onclick='ui.chooseBestOfOption(this); ui.enableDisablePlayButton();'>Best of 5</button>
+                    <button class='best-of-seven-button'
+                        onclick='ui.chooseBestOfOption(this); ui.enableDisablePlayButton();'>Best of 7</button>
+                    <button class='best-of-nine-button'
+                        onclick='ui.chooseBestOfOption(this); ui.enableDisablePlayButton();'>Best of 9</button>
+                </div>
+            </div>
+
+            <div class='ball-count-container'>
+                <p class='ball-count-container-text'>Ball count 1-10 🥎</p>
+
+                <div class='ball-count-buttons-container'>
+                    <button class='decrease-ball-count-button' onclick='ui.specifyBallCountOption(this)'>-1</button>
+
+                    <div class='ball-count'>3</div>
+
+                    <button class='increase-ball-count-button' onclick='ui.specifyBallCountOption(this)'>+1</button>
+                </div>
+            </div>
+
+            <div class='play-button-container'>
+                <button class='play-button' disabled onclick='game.startGame()'>Play</button>
+            </div>
+        </div>
+
+        <div class='mainframe'>
+            <canvas class='canvas' width='1600' height='800'></canvas>
+
+            <div class='wins-info'></div>
+
+            <div class='mainframe-menu-buttons-container'>
+                <button class='mainframe-restart-button' onclick='ui.restart()'>Restart</button>
+                <button class='mainframe-go-to-menu-button' onclick='ui.goToMainMenuFromMainframe()'>Menu</button>
+                <button class='mainframe-pause-the-game' onclick='ui.pauseTheGame();'>Pause</button>
+            </div>
+        </div>
+
+        <div class='gameover-container'>
+            <div class='gameover-text'>GAME OVER</div>
+
+            <div class='score-text'></div>
+
+            <div class='gameover-buttons-container'>
+                <button class='restart-button' onclick='ui.restart()'>Restart</button>
+                <button class='go-to-menu-button' onclick='ui.goToMainMenuFromGameoverScreen()'>Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script src='js/lesson-3.js'></script>
+    <script src='js/helper.js'></script>
+    <script src='js/game.js'></script>
+    <script src='js/ui.js'></script>
+    <script src='js/paddles.js'></script>
+    <script src='js/balls.js'></script>
+    <script src='js/controls.js'></script>
+    <script src='js/render.js'></script>
+    <script src='js/audio.js'></script>
+</body>
+
+<footer></footer>
+
+</html>
