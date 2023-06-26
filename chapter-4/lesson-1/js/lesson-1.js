@@ -71,6 +71,7 @@ const world = {
     getDistanceToFloor: function (playerX) {
         for (let i in this.floorTiles) {
             let tile = this.floorTiles[i];
+
             if (tile.x <= playerX && tile.x + tile.width >= playerX) {
                 return tile.height;
             };
@@ -123,6 +124,7 @@ const player = {
     applyGravity: function () {
         this.currentDistanceAboveGround = player.getDistanceFor(this.x);
         let rightHandSideDistance = this.getDistanceFor(this.x + this.width);
+
         if (this.currentDistanceAboveGround < 0 || rightHandSideDistance < 0) {
             world.stop();
         };
@@ -130,14 +132,22 @@ const player = {
 
     processGravity: function () {
         this.y += this.downwardForce;
-        let floorHeight = world.getDistanceToFloor(this.x, this.width);
+        let floorHeight = world.getDistanceToFloor(this.x);
         let topYofPlatform = world.height - floorHeight;
+
+        console.log('before ' + this.y);
+        console.log(topYofPlatform);
+
         if (this.y > topYofPlatform) {
             this.y = topYofPlatform;
         };
 
+        console.log('after ' + this.y);
+
         if (this.downwardForce < 0) {
+            console.log('here');
             this.jumpHeight += (this.downwardForce * -1);
+
             if (this.jumpHeight >= player.height * 6) {
                 this.downwardForce = world.gravity;
                 this.jumpHeight = 0;
@@ -145,9 +155,10 @@ const player = {
         };
     },
 
-    keyPress: function (keyInfo) {
+    keyPress: function () {
         let floorHeight = world.getDistanceToFloor(this.x, this.width);
         let onTheFloor = floorHeight == (world.height - this.y);
+
         if (onTheFloor) {
             this.downwardForce = -8;
         };
