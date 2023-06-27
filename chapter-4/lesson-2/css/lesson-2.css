@@ -1,0 +1,47 @@
+* {
+    margin: 0;
+    padding: 0;
+    overflow-y: hidden;
+
+    -webkit-user-select: none;
+    /* Safari */
+    -ms-user-select: none;
+    /* IE 10 and IE 11 */
+    user-select: none;
+    /* Standard syntax */
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    font-family: Calibri;
+}
+
+.hide-it {
+    display: none;
+}
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
+.game-container {
+    border: 1px solid black;
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    width: 1600px;
+    height: 877px;
+}
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
+.mainframe {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+}
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
+.canvas {
+    border: 2px solid rgb(18, 238, 18);
+}
