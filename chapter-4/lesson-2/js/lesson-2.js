@@ -94,17 +94,17 @@ const world = {
         for (const i in this.floorTiles) {
             let tile = this.floorTiles[i]; /*Берем данные о каком-то тайле.*/
 
-            // if (this.floorTiles.length > 2 && i < 2 && playerX === player.x) {
-            //     if (tile.x <= playerX &&
-            //         tile.x + tile.width > playerX &&
-            //         tile.x + tile.width < playerX + player.width &&
-            //         tile.height <= this.floorTiles[Number(i) + 1].height) {
-            //         // console.log(this.floorTiles[Number(i) + 1]);
-            //         // alert('123');
+            if (this.floorTiles.length > 2 && i === 0 && playerX === player.x) {
+                if (tile.x <= playerX &&
+                    tile.x + tile.width > playerX &&
+                    tile.x + tile.width < playerX + player.width &&
+                    tile.height <= this.floorTiles[Number(i) + 1].height) {
+                    // console.log(this.floorTiles[Number(i) + 1]);
+                    // alert('123');
 
-            //         return this.floorTiles[Number(i) + 1].height;
-            //     };
-            // };
+                    return this.floorTiles[Number(i) + 1].height;
+                };
+            };
 
             /*Проверяем, что координата X выбранного тайла меньше, то есть левее, чем координата X персонажа или равна ей. 
             То есть проверяем, что игрок находится над этим тайлом. И также проверяем, что оставшийся участок выбранного
