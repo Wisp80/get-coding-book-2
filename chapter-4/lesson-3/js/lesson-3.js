@@ -57,6 +57,25 @@ const helper = {
 const game = {
     tickTimeout: null,
     tickRate: 1000 / 60,
+    worldSpeed: 16, // Скорость прокрутки мира.
+    maxWorldSpeed: 20,
+    highestFloor: canvas.height / 2, /*Максимально возможная высота какого-либо тайла.*/
+    autoScroll: true, // Показывает прокручивается ли мир в данный момент.
+    tilesPassed: 0,
+    tempWallID: 2, // ID для стен при их создании.
+
+    wallWidth: 950, // Ширина стен.
+    maximumWallHeight: canvas.height / 2, // Максимально возможная высота какой-либо стены.
+    minimumWallHeight: 50, // Минимально возможная высота какой-либо стены.
+    maximumWallAtOneTIme: 5, // Количество стен, о которых мы можем иметь данных в данный момент.
+    playerHeightMultiplayer: 2, /*Множитель высоты игрока, для определения на какую максимальную высоту может запрыгнуть игрок c текущей последней стены.*/
+    differnceBetweenCurrentLastWallAndNewWall: 100, /*Число, указывающее на сколько следующая стена может быть минимально выше текущей последней стены.*/
+    newWallLowHeightEnhancer: 60, /*Число, указывающее, на сколько надо увеличить высоту следующе стены, если она ниже установленного ограничения между этой стены и предыдудщей текущей стеной.*/
+
+
+    stopWorld: function () { // Метод для указания, что мир больше не прокручивается.
+        this.autoScroll = false;
+    },
 
     tick: function () {
         window.clearTimeout(game.tickTimeout);
@@ -66,7 +85,97 @@ const game = {
     },
 
     prepareDataForNextTick: function () {
+        game.cleanOldTiles();
+        game.addFutureWalls(
+            this.maximumWallAtOneTIme,
+            this.playerHeightMultiplayer,
+            this.minimumWallHeight,
+            this.differnceBetweenCurrentLastWallAndNewWall,
+            this.newWallLowHeightEnhancer
+        );
         players.playerOne.move();
+
+        if (!players.playerOne.isActive) { // Если игрок не активный, то останавливаем прокрутку мира.
+            game.stopWorld();
+        };
+
+        if (this.autoScroll) { // Пока прокручивается мир, двигаем стены.
+            for (let i = 0; i < walls.length; i++) {
+                walls[i].move(game.worldSpeed);
+            };
+        };
+    },
+
+    addFutureWalls: function (
+        maximumWallAtOneTIme,
+        playerHeightMultiplayer,
+        minimumWallHeight,
+        differnceBetweenCurrentLastWallAndNewWall,
+        newWallLowHeightEnhancer
+    ) {
+        if (walls.length >= maximumWallAtOneTIme) { /*Если уже есть данные для минимум 4 стен, то ничего не делаем.*/
+            return;
+        };
+
+        /*Получаем данные о самой последней стене в массиве для стен.*/
+        let currentLastWall = walls[walls.length - 1];
+
+        /*Определяем на какую максимальную высоту может запрыгнуть игрок c текущей последней стены.*/
+        let biggestJumpableHeight = currentLastWall.height + (players.playerOne.jumpHeight - players.playerOne.gravity) * playerHeightMultiplayer;
+
+        /*Если так получилось, что максимальная высота, на которую может запрыгнуть игрок c текущей последней стены оказалась больше, 
+        чем предустановленное ограничение на максимальную высоту стены, то мы делаем так, чтобы максимальная высота, на которую 
+        может запрыгнуть игрок c текущей последней стены была равна этому ограничению, чтобы случайно не создать стену, на которую
+        не будет возможности запрыгнуть.*/
+        if (biggestJumpableHeight > this.maximumWallHeight) {
+            biggestJumpableHeight = this.maximumWallHeight;
+        };
+
+        /*Генерируем высоту для следующей стены. Полученная высота будет в диапазоне от минимально указанной высоты, до максимальной 
+        высоты, на которую игрок может запрыгнуть игрок c текущей последней стены, плюс минимально указанная высота.*/
+        let newWallHeight = Math.floor(Math.random() * biggestJumpableHeight) + minimumWallHeight;
+
+        /*Если текущая последняя стена ниже, чем следующая стена, которую мы пытаемся создать, и их разница по высоте меньше установленного ограничения,
+        то увеличиваем высчитанную высоту для следующей стены.*/
+        if (currentLastWall.height < newWallHeight && Math.abs(newWallHeight - currentLastWall.height) < differnceBetweenCurrentLastWallAndNewWall) {
+            newWallHeight = newWallHeight + newWallLowHeightEnhancer;
+        };
+
+        /*Высчитываем координату X следующей стены, то есть там, где кончается предыдущая стены.*/
+        let newWallX = currentLastWall.x + currentLastWall.width;
+
+        if (this.tilesPassed % Math.floor(5 * Math.random()) === 0) {
+            let newWallShift = Math.floor(400 * Math.random());
+
+            if (newWallShift <= 200) {
+                newWallShift = 200;
+            };
+            
+            newWallX += newWallShift;
+        };
+
+        /*Создаем данные для следующего тайла.*/
+        let newWall = new Wall(newWallX, canvas.height - newWallHeight, canvas.width - 600, newWallHeight, helper.getRandomColor(), this.tempWallID, 2);
+        walls.push(newWall); /*Отправляем созданные данные в массив стен.*/
+
+        this.tempWallID++; // Увеличиваем ID для последующей стены. 
+    },
+
+    /*Метод для удаления тайлов, которых больше не видно на экране.*/
+    cleanOldTiles: function () {
+        for (const i in walls) {
+            /*Мы не видим какой-либо тайл, если он полностью ушел за экран, то есть на 700 пикселей влево от 0. Это
+            значит, что его координата X как минимум равна -700.*/
+            if (walls[i].x <= -walls[i].width) {
+                walls.splice(i, 1); /*Удаляем выбранный тайл из массива с данными по тайлам.*/
+                this.tilesPassed++; /*Обновляем количество пройденных тайлов.*/
+
+                if (this.tilesPassed % 3 === 0 && this.worldSpeed < this.maxWorldSpeed) { /*Увеличиваем скорость прокрутки мира
+                каждые 3 пройденных тайла.*/
+                    this.worldSpeed++;
+                };
+            };
+        };
     },
 
     renderPreparedDataForNextTick: function () {
@@ -100,14 +209,6 @@ const controls = {
                     this.isDownKeyPressed = true;
                     break;
 
-                case 'a':
-                    this.isLeftKeyPressed = true;
-                    break;
-
-                case 'd':
-                    this.isRightKeyPressed = true;
-                    break;
-
                 default:
                     break;
             };
@@ -121,14 +222,6 @@ const controls = {
 
                 case 's':
                     this.isDownKeyPressed = false;
-                    break;
-
-                case 'a':
-                    this.isLeftKeyPressed = false;
-                    break;
-
-                case 'd':
-                    this.isRightKeyPressed = false;
                     break;
 
                 default:
@@ -153,15 +246,15 @@ function Player(
     velocityX, friction,
     color
 ) {
-    this.x = 600;
-    this.y = 400;
+    this.x = 300;
+    this.y = 485;
     this.width = 40;
     this.height = 60;
     this.speedX = 0;
     this.speedY = 0;
     this.maxSpeedX = 10;
     this.maxSpeedY = 10;
-    this.jumpHeight = 5;
+    this.jumpHeight = 15;
     this.gravity = 3;
     this.accelerationX = 1;
     this.friction = 0.6; // [0; 1] трение, используется как множитель скорости для плавного торможения.
@@ -195,30 +288,12 @@ function Player(
 
             /*Проверяем не будет ли коллизии между игроком и стенами в следующем тике, если он будет двигаться по X.*/
             if (helper.checkIntersectionBetweenTwoNotRotatedRectangles(
-                predictedHorizontalPosition.x + predictedHorizontalPosition.width, walls[i].x,
-                predictedHorizontalPosition.x, walls[i].x + walls[i].width,
-                predictedHorizontalPosition.y + predictedHorizontalPosition.height, walls[i].y,
-                predictedHorizontalPosition.y, walls[i].y + walls[i].height)
+                this.x + this.width, walls[i].x,
+                this.x, walls[i].x + walls[i].width,
+                this.y + this.height, walls[i].y,
+                this.y, walls[i].y + walls[i].height)
             ) {
-                /*Если такая коллизия есть, то пока такая коллизия имеет место быть, сдвигаем по X предполагаемую
-                проекцию игрока, которая будет в следующем тике, ближе к текущей позиции игрока на 1 до тех пор, пока 
-                не пропадет коллизия между предполагаемой позицией игрока и какой-то стеной.*/
-                while (helper.checkIntersectionBetweenTwoNotRotatedRectangles(
-                    predictedHorizontalPosition.x + predictedHorizontalPosition.width, walls[i].x,
-                    predictedHorizontalPosition.x, walls[i].x + walls[i].width,
-                    predictedHorizontalPosition.y + predictedHorizontalPosition.height, walls[i].y,
-                    predictedHorizontalPosition.y, walls[i].y + walls[i].height)
-                ) {
-                    predictedHorizontalPosition.x -= Math.sign(this.speedX);
-                };
-
-                /*Как только мы перестанем сдвигать по X предполагаемую проекцию игрока, которая будет в следующем тике, ближе 
-                к текущей позиции игрока, то это будет означать, что мы имеем самую близку позицию игрока для следующего тика,
-                когда игрок будет касаться какой-то стены, но не проходит через нее. Поэтому указываем, что координата X
-                этой предполагаемой позиции должна быть текущей координатой X игрока и останавливаем игрока по X, чтобы он не
-                пытался двигаться дальше в стену, так как это приведет к бесконечной работе цикла "while".*/
-                this.x = predictedHorizontalPosition.x;
-                this.speedX = 0;
+                this.isActive = false;
             };
 
             /*Проверяем не будет ли коллизии между игроком и стенами в следующем тике, если он будет двигаться по Y.*/
@@ -237,7 +312,11 @@ function Player(
                     predictedVerticalPosition.y + predictedVerticalPosition.height, walls[i].y,
                     predictedVerticalPosition.y, walls[i].y + walls[i].height)
                 ) {
-                    predictedVerticalPosition.y -= Math.sign(this.speedY);
+                    if (this.isActive) {
+                        predictedVerticalPosition.y -= Math.sign(this.speedY);
+                    } else {
+                        predictedVerticalPosition.y -= 1;
+                    };
                 };
 
                 /*Как только мы перестанем сдвигать по Y предполагаемую проекцию игрока, которая будет в следующем тике, ближе 
@@ -245,26 +324,28 @@ function Player(
                 когда игрок будет касаться какой-то стены, но не проходит через нее. Поэтому указываем, что координата Y
                 этой предполагаемой позиции должна быть текущей координатой Y игрока и останавливаем игрока по Y, чтобы он не
                 пытался двигаться дальше в стену, так как это приведет к бесконечной работе цикла "while".*/
-                this.y = predictedVerticalPosition.y;
-                this.speedY = 0;
+                if (this.isActive) {
+                    this.y = predictedVerticalPosition.y;
+                    this.speedY = 0;
+                };
             };
         };
 
         /*----------------------------*/
 
         /*Подготавливаем данные, описывающие путь, который игрок может пройти за следующий тик, если будет двигаться по X.*/
-        if (Math.abs(this.speedX) > this.width) {
-            if (this.speedX > 0) { // Если будет двигаться вправо.
-                this.predictedHorizontalWayToTheRight = {
-                    x: this.x + this.width,
-                    y: this.y,
-                    width: this.speedX - this.width,
-                    height: this.height
-                };
-            } else {
-                this.predictedHorizontalWayToTheRight = null;
+        if (game.worldSpeed > 0) { // Если будет двигаться вправо.
+            this.predictedHorizontalWayToTheRight = {
+                x: this.x + this.width,
+                y: this.y,
+                width: game.worldSpeed - this.width,
+                height: this.height
             };
+        } else {
+            this.predictedHorizontalWayToTheRight = null;
+        };
 
+        if (Math.abs(this.speedX) > this.width) {
             if (this.speedX < 0) { // Если будет двигаться влево.
                 this.predictedHorizontalWayToTheLeft = {
                     x: this.x - Math.abs(this.speedX) + this.width,
@@ -361,8 +442,8 @@ function Player(
         let closestCollisionDown = helper.findTheSmallestElementInArrayOfNumbers(potentialCollisionsDown);
         let closestCollisionUp = helper.findTheSmallestElementInArrayOfNumbers(potentialCollisionsUp);
 
-        if (this.speedX > 0 && closestCollisionRight) { // Если игрок движется вправо и на его пути потенциально есть препятствия,
-            this.speedX = closestCollisionRight - 1; // то в следующий тик его скорость равна расстоянию до самого ближайшего из этих препятствий.
+        if (game.worldSpeed > 0 && closestCollisionRight) { // Если игрок движется вправо и на его пути потенциально есть препятствия,
+            game.worldSpeed = closestCollisionRight; // то в следующий тик его скорость равна расстоянию до самого ближайшего из этих препятствий.
         };
 
         if (this.speedX < 0 && closestCollisionLeft) { // Если игрок движется влево и на его пути потенциально есть препятствия,
@@ -487,20 +568,7 @@ function Player(
 
 /*-------------------------------------------------------------------------------------------------------------*/
 const walls = [
-    new Wall(400, 50, 60, 800, helper.getRandomColor(), 0, 2),
-    new Wall(200, 150, 40, 40, helper.getRandomColor(), 1, 2),
-    new Wall(300, 550, 1200, 300, helper.getRandomColor(), 2, 2),
-    new Wall(350, 150, 1150, 55, helper.getRandomColor(), 3, 2),
-    new Wall(1400, 100, 20, 500, helper.getRandomColor(), 4, 2),
-    new Wall(530, 250, 20, 20, helper.getRandomColor(), 5, 2),
-    new Wall(730, 350, 20, 20, helper.getRandomColor(), 6, 2),
-    new Wall(860, 390, 20, 20, helper.getRandomColor(), 7, 2),
-    new Wall(870, 310, 20, 20, helper.getRandomColor(), 8, 2),
-    new Wall(900, 500, 20, 20, helper.getRandomColor(), 9, 2),
-    new Wall(1100, 368, 20, 20, helper.getRandomColor(), 10, 2),
-    new Wall(1300, 350, 20, 20, helper.getRandomColor(), 11, 2),
-    new Wall(1300, 500, 20, 20, helper.getRandomColor(), 12, 2),
-    new Wall(1200, 240, 20, 20, helper.getRandomColor(), 13, 2),
+    new Wall(0, 550, 1200, 1000, helper.getRandomColor(), 1, 2),
 ];
 
 function Wall(
@@ -517,6 +585,11 @@ function Wall(
     this.id = id;
     this.type = type;
 
+    /*Метод для сдвига стенки влево.*/
+    this.move = function (speedX) {
+        this.x -= speedX;
+    };
+
     this.drawWallsCoordinates = function () {
         ctx.font = '10px serif';
         ctx.fillStyle = 'white';
@@ -527,7 +600,7 @@ function Wall(
     };
 
     this.drawWallsID = function () {
-        ctx.font = '11px serif';
+        ctx.font = '30px Arial';
         ctx.fillStyle = 'white';
         ctx.fillText(this.id, this.x + this.width / 2, this.y + this.height / 2);
     };
