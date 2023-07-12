@@ -54,14 +54,32 @@ const helper = {
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
+const ui = {
+    pressPlayButton: function () {
+        game.tick();
+        document.getElementsByClassName('play-button')[0].disabled = true;
+
+        audio.initiateBackgroudMusicLooping();
+        audio.playSound(audio.defaultBackgroundMusic);
+    },
+
+    pressResetButton: function () {
+        game.reset();
+        game.tick();
+    }
+};
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
 const game = {
     tickTimeout: null,
     tickRate: 1000 / 60,
     worldSpeed: 16, // Скорость прокрутки мира.
-    maxWorldSpeed: 20,
+    maxWorldSpeed: 100,
     highestFloor: canvas.height / 2, /*Максимально возможная высота какого-либо тайла.*/
     autoScroll: true, // Показывает прокручивается ли мир в данный момент.
     tilesPassed: 0,
+    distanceTravelled: 0,
     tempWallID: 2, // ID для стен при их создании.
 
     wallWidth: 950, // Ширина стен.
@@ -70,7 +88,8 @@ const game = {
     maximumWallAtOneTIme: 5, // Количество стен, о которых мы можем иметь данных в данный момент.
     playerHeightMultiplayer: 2, /*Множитель высоты игрока, для определения на какую максимальную высоту может запрыгнуть игрок c текущей последней стены.*/
     differnceBetweenCurrentLastWallAndNewWall: 100, /*Число, указывающее на сколько следующая стена может быть минимально выше текущей последней стены.*/
-    newWallLowHeightEnhancer: 60, /*Число, указывающее, на сколько надо увеличить высоту следующе стены, если она ниже установленного ограничения между этой стены и предыдудщей текущей стеной.*/
+    newWallLowHeightEnhancer: 60, /*Число, указывающее, на сколько надо увеличить высоту следующе стены, 
+    если она ниже установленного ограничения между этой стены и предыдудщей текущей стеной.*/
 
 
     stopWorld: function () { // Метод для указания, что мир больше не прокручивается.
@@ -79,12 +98,41 @@ const game = {
 
     tick: function () {
         window.clearTimeout(game.tickTimeout);
-        game.prepareDataForNextTick();
-        window.requestAnimationFrame(game.renderPreparedDataForNextTick);
-        game.tickTimeout = window.setTimeout('game.tick()', game.tickRate);
+        if (players.playerOne.isActive) {
+            game.prepareDataForNextTick();
+            window.requestAnimationFrame(game.renderPreparedDataForNextTick);
+            game.tickTimeout = window.setTimeout('game.tick()', game.tickRate);
+        };
+    },
+
+    reset: function () {
+        audio.pauseSound(audio.defaultBackgroundMusic);
+        audio.playSound(audio.defaultBackgroundMusic);
+
+        game.autoScroll = true;
+        game.worldSpeed = 16;
+        game.tilesPassed = 0;
+        game.distanceTravelled = 0;
+        game.tempWallID = 2;
+
+        players.playerOne.isActive = true;        
+        players.playerOne.currentSpeedX = 0;
+        players.playerOne.currentSpeedY = 0;
+        players.playerOne.x = 300;
+        players.playerOne.y = 485;
+
+        walls = [
+            new Wall(
+                0, 550,
+                1200, 450,
+                helper.getRandomColor(), 1,
+                2
+            )
+        ];
     },
 
     prepareDataForNextTick: function () {
+        players.playerOne.checkIfPlayerIsInAPit();
         game.cleanOldTiles();
         game.addFutureWalls(
             this.maximumWallAtOneTIme,
@@ -96,6 +144,8 @@ const game = {
         players.playerOne.move();
 
         if (!players.playerOne.isActive) { // Если игрок не активный, то останавливаем прокрутку мира.
+            audio.playSound(audio.generateLoseSound());
+            audio.pauseSound(audio.defaultBackgroundMusic);
             game.stopWorld();
         };
 
@@ -104,6 +154,8 @@ const game = {
                 walls[i].move(game.worldSpeed);
             };
         };
+
+        this.calculateDistanceTravelled();
     },
 
     addFutureWalls: function (
@@ -121,7 +173,7 @@ const game = {
         let currentLastWall = walls[walls.length - 1];
 
         /*Определяем на какую максимальную высоту может запрыгнуть игрок c текущей последней стены.*/
-        let biggestJumpableHeight = currentLastWall.height + (players.playerOne.jumpHeight - players.playerOne.gravity) * playerHeightMultiplayer;
+        let biggestJumpableHeight = currentLastWall.height + (players.playerOne.accelerationY - players.playerOne.gravity) * playerHeightMultiplayer;
 
         /*Если так получилось, что максимальная высота, на которую может запрыгнуть игрок c текущей последней стены оказалась больше, 
         чем предустановленное ограничение на максимальную высоту стены, то мы делаем так, чтобы максимальная высота, на которую 
@@ -150,7 +202,7 @@ const game = {
             if (newWallShift <= 200) {
                 newWallShift = 200;
             };
-            
+
             newWallX += newWallShift;
         };
 
@@ -178,6 +230,10 @@ const game = {
         };
     },
 
+    calculateDistanceTravelled: function () {
+        this.distanceTravelled += this.worldSpeed;
+    },
+
     renderPreparedDataForNextTick: function () {
         ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -187,6 +243,12 @@ const game = {
         };
 
         players.playerOne.draw();
+
+        ctx.fillStyle = 'white';
+        ctx.font = '35px Arial';
+        ctx.fillText('Скорость: ' + game.worldSpeed, 10, 40); /*Выводим текст о текущей скорости прокрутки мира.*/
+        ctx.fillText('Пройденое расстояние: ' + game.distanceTravelled, 10, 80); /*Выводим текст о том, какое расстояние было пройдено.*/
+        ctx.fillText('Пройдено тайлов: ' + game.tilesPassed, 10, 120); /*Выводим текст о том, какое расстояние было пройдено.*/
     },
 };
 
@@ -194,19 +256,12 @@ const game = {
 
 const controls = {
     isUpKeyPressed: false,
-    isDownKeyPressed: false,
-    isLeftKeyPressed: false,
-    isRightKeyPressed: false,
 
     initializePlayersControlsListening: function () {
         window.addEventListener('keydown', (event) => {
             switch (event.key) {
                 case 'w':
                     this.isUpKeyPressed = true;
-                    break;
-
-                case 's':
-                    this.isDownKeyPressed = true;
                     break;
 
                 default:
@@ -218,10 +273,6 @@ const controls = {
             switch (event.key) {
                 case 'w':
                     this.isUpKeyPressed = false;
-                    break;
-
-                case 's':
-                    this.isDownKeyPressed = false;
                     break;
 
                 default:
@@ -240,26 +291,32 @@ const players = {
 function Player(
     x, y,
     width, height,
-    speedX, speedY,
+    currentSpeedX, currentSpeedY,
     maxSpeedX, maxSpeedY,
-    jumpHeight, gravity,
+    accelerationY, gravity,
     velocityX, friction,
-    color
+    color, src
 ) {
     this.x = 300;
     this.y = 485;
     this.width = 40;
     this.height = 60;
-    this.speedX = 0;
-    this.speedY = 0;
+    this.currentSpeedX = 0;
+    this.currentSpeedY = 0;
     this.maxSpeedX = 10;
-    this.maxSpeedY = 10;
-    this.jumpHeight = 15;
+    this.maxSpeedY = 40;
+    this.currentAccelerationY = 15;
+    this.accelerationY = 24;
     this.gravity = 3;
     this.accelerationX = 1;
     this.friction = 0.6; // [0; 1] трение, используется как множитель скорости для плавного торможения.
     this.color = 'orange';
+    this.src = './src/images/human2.png'
     this.isActive = true; // Указывает активный ли для управления наш игрок.
+
+    this.isPlayerOnTheFloor = false;
+    this.currentJumpedDistance = 0;
+    this.maxJumpedDistance = 300;
 
     this.predictedHorizontalWayToTheRight = null;
     this.predictedHorizontalWayToTheLeft = null;
@@ -267,18 +324,10 @@ function Player(
     this.predictedVerticalWayUp = null;
 
     this.predictCollision = function () {
-        /*Подготавливаем данные, где окажется игрок в следующий тик, если будет двигаться по X.*/
-        let predictedHorizontalPosition = {
-            x: this.x + this.speedX,
-            y: this.y,
-            width: this.width,
-            height: this.height
-        };
-
         /*Подготавливаем данные, где окажется игрок в следующий тик, если будет двигаться по Y.*/
         let predictedVerticalPosition = {
             x: this.x,
-            y: this.y + this.speedY,
+            y: this.y + this.currentSpeedY,
             width: this.width,
             height: this.height
         };
@@ -313,7 +362,7 @@ function Player(
                     predictedVerticalPosition.y, walls[i].y + walls[i].height)
                 ) {
                     if (this.isActive) {
-                        predictedVerticalPosition.y -= Math.sign(this.speedY);
+                        predictedVerticalPosition.y -= Math.sign(this.currentSpeedY);
                     } else {
                         predictedVerticalPosition.y -= 1;
                     };
@@ -326,7 +375,8 @@ function Player(
                 пытался двигаться дальше в стену, так как это приведет к бесконечной работе цикла "while".*/
                 if (this.isActive) {
                     this.y = predictedVerticalPosition.y;
-                    this.speedY = 0;
+                    this.currentSpeedY = 0;
+                    this.isPlayerOnTheFloor = true;
                 };
             };
         };
@@ -345,12 +395,12 @@ function Player(
             this.predictedHorizontalWayToTheRight = null;
         };
 
-        if (Math.abs(this.speedX) > this.width) {
-            if (this.speedX < 0) { // Если будет двигаться влево.
+        if (Math.abs(this.currentSpeedX) > this.width) {
+            if (this.currentSpeedX < 0) { // Если будет двигаться влево.
                 this.predictedHorizontalWayToTheLeft = {
-                    x: this.x - Math.abs(this.speedX) + this.width,
+                    x: this.x - Math.abs(this.currentSpeedX) + this.width,
                     y: this.y,
-                    width: Math.abs(this.speedX) - this.width,
+                    width: Math.abs(this.currentSpeedX) - this.width,
                     height: this.height
                 };
             } else {
@@ -359,24 +409,24 @@ function Player(
         };
 
         /*Подготавливаем данные, описывающие путь, который игрок может пройти за следующий тик, если будет двигаться по Y.*/
-        if (Math.abs(this.speedY) > this.height) {
-            if (this.speedY > 0) { // Если будет двигаться вниз.
+        if (Math.abs(this.currentSpeedY) > this.height) {
+            if (this.currentSpeedY > 0) { // Если будет двигаться вниз.
                 this.predictedVerticalWayDown = {
                     x: this.x,
                     y: this.y + this.height,
                     width: this.width,
-                    height: this.speedY - this.height
+                    height: this.currentSpeedY - this.height
                 };
             } else {
                 this.predictedVerticalWayDown = null;
             };
 
-            if (this.speedY < 0) { // Если будет двигаться вверх.
+            if (this.currentSpeedY < 0) { // Если будет двигаться вверх.
                 this.predictedVerticalWayUp = {
                     x: this.x,
-                    y: this.y - Math.abs(this.speedY) + this.height,
+                    y: this.y - Math.abs(this.currentSpeedY) + this.height,
                     width: this.width,
-                    height: Math.abs(this.speedY) - this.height
+                    height: Math.abs(this.currentSpeedY) - this.height
                 };
             } else {
                 this.predictedVerticalWayUp = null;
@@ -446,71 +496,60 @@ function Player(
             game.worldSpeed = closestCollisionRight; // то в следующий тик его скорость равна расстоянию до самого ближайшего из этих препятствий.
         };
 
-        if (this.speedX < 0 && closestCollisionLeft) { // Если игрок движется влево и на его пути потенциально есть препятствия,
-            this.speedX = -closestCollisionLeft + 1; // то в следующий тик его скорость равна расстоянию до самого ближайшего из этих препятствий.
+        if (this.currentSpeedX < 0 && closestCollisionLeft) { // Если игрок движется влево и на его пути потенциально есть препятствия,
+            this.currentSpeedX = -closestCollisionLeft + 1; // то в следующий тик его скорость равна расстоянию до самого ближайшего из этих препятствий.
         };
 
-        if (this.speedY > 0 && closestCollisionDown) { // Если игрок движется вниз и на его пути потенциально есть препятствия,
-            this.speedY = closestCollisionDown - 1; // то в следующий тик его скорость равна расстоянию до самого ближайшего из этих препятствий.
+        if (this.currentSpeedY > 0 && closestCollisionDown) { // Если игрок движется вниз и на его пути потенциально есть препятствия,
+            this.specurrentSpeedYedY = closestCollisionDown - 1; // то в следующий тик его скорость равна расстоянию до самого ближайшего из этих препятствий.
         };
 
-        if (this.speedY < 0 && closestCollisionUp) { // Если игрок движется вверх и на его пути потенциально есть препятствия,
-            this.speedY = -closestCollisionUp + 1; // то в следующий тик его скорость равна расстоянию до самого ближайшего из этих препятствий.
+        if (this.currentSpeedY < 0 && closestCollisionUp) { // Если игрок движется вверх и на его пути потенциально есть препятствия,
+            this.currentSpeedY = -closestCollisionUp + 1; // то в следующий тик его скорость равна расстоянию до самого ближайшего из этих препятствий.
         };
     };
 
     this.move = function () {
         if (this.isActive) { // Реализуем движение игрока, если он активен.
-            /*Обработка скоростей по X.*/
-            if ((!controls.isLeftKeyPressed && !controls.isRightKeyPressed) || // Если не нажато вправо и влево
-                (controls.isLeftKeyPressed && controls.isRightKeyPressed)) { // или если нажато и вправо и влево,
-                this.speedX *= this.friction; // то значит мы не двигаемся вправо или влево, соответственно замедляем нашу скорость по X.
-            } else if (controls.isRightKeyPressed) { // Если нажато вправо,
-                this.speedX += this.accelerationX; // то увеличиваем скорость по X.
-            } else if (controls.isLeftKeyPressed) { // Если нажато влево,
-                this.speedX -= this.accelerationX; // то уменьшаем скорость по X.
-            };
-
-            /*Ограничиваем скорость по X при достижения максимума.*/
-            if (this.speedX >= this.maxSpeedX) { // Если достигаем максимума скорости по X вправо,
-                this.speedX = this.maxSpeedX; // то ограничиваем нашу скорость по X максимально указанной.
-            } else if (this.speedX < -this.maxSpeedX) { // Если достигаем максимума скорости по X влево,
-                this.speedX = -this.maxSpeedX; // то ограничиваем нашу скорость по X максимально указанной.
-            };
-
-            /*Округляем скорость по X до целых значений. Поскольку метод "Math.floor()" для отрицательных значений, например,
-            "-5,3" превращает в "-6", то есть модуль числа по факту округляется сверху, то для отрицательных значение используем 
-            "Math.ceil()".*/
-            if (this.speedX > 0) { // Если скорость по X больше 0,
-                this.speedX = Math.floor(this.speedX); // то округляем скорость по X снизу. 
-            } else {
-                this.speedX = Math.ceil(this.speedX); // Если скорость по X меньше или равна 0, то округляем скорость по X сверху.
-            };
-
-            /*----------------------------*/
-
             /*Обработка скоростей по Y.*/
             if (controls.isUpKeyPressed) { // Если нажато вверх,
-                this.speedY -= this.jumpHeight; // то значит уменьшаем скорость по Y, чтобы двигать игрока вверх.
+                this.currentSpeedY -= this.currentAccelerationY; // то значит уменьшаем скорость по Y, чтобы двигать игрока вверх.
+                this.isPlayerOnTheFloor = false;
             };
 
             /*Применяем гравитацию.*/
-            this.speedY += this.gravity; // Каждый тик увеличиваем скорость по Y, чтобы при применении этой скорости к игроку двигать его вниз.
+            this.currentSpeedY += this.gravity; // Каждый тик увеличиваем скорость по Y, чтобы при применении этой скорости к игроку двигать его вниз.
+
+            if (!this.isPlayerOnTheFloor && this.currentSpeedY < 0) {
+                this.currentJumpedDistance += (this.accelerationY - this.gravity);
+            };
+
+            if (this.currentJumpedDistance >= this.maxJumpedDistance) {
+                this.currentAccelerationY = 0;
+            };
+
+            if (this.isPlayerOnTheFloor) {
+                this.currentJumpedDistance = 0;
+            };
+
+            if (this.isPlayerOnTheFloor) {
+                this.currentAccelerationY = this.accelerationY;
+            };
 
             /*Ограничиваем скорость по Y при достижения максимума.*/
-            if (this.speedY >= this.maxSpeedY) { // Если достигаем максимума скорости по Y вверх,
-                this.speedY = this.maxSpeedY; // то ограничиваем нашу скорость по Y максимально указанной.
-            } else if (this.speedY < -this.maxSpeedY) { // Если достигаем максимума скорости по Y вниз,
-                this.speedY = -this.maxSpeedY; // то ограничиваем нашу скорость по Y максимально указанной.
+            if (this.currentSpeedY >= this.maxSpeedY) { // Если достигаем максимума скорости по Y вверх,
+                this.currentSpeedY = this.maxSpeedY; // то ограничиваем нашу скорость по Y максимально указанной.
+            } else if (this.currentSpeedY < -this.maxSpeedY) { // Если достигаем максимума скорости по Y вниз,
+                this.currentSpeedY = -this.maxSpeedY; // то ограничиваем нашу скорость по Y максимально указанной.
             };
 
             /*Округляем скорость по Y до целых значений. Поскольку метод "Math.floor()" для отрицательных значений, например,
             "-5,3" превращает в "-6", то есть модуль числа по факту округляется сверху, то для отрицательных значение используем 
             "Math.ceil()".*/
-            if (this.speedY > 0) { // Если скорость по Y больше 0,
-                this.speedY = Math.floor(this.speedY); // то округляем скорость по Y снизу. 
+            if (this.currentSpeedY > 0) { // Если скорость по Y больше 0,
+                this.currentSpeedY = Math.floor(this.currentSpeedY); // то округляем скорость по Y снизу. 
             } else {
-                this.speedY = Math.ceil(this.speedY); // Если скорость по Y меньше или равна 0, то округляем скорость по Y сверху.
+                this.currentSpeedY = Math.ceil(this.currentSpeedY); // Если скорость по Y меньше или равна 0, то округляем скорость по Y сверху.
             };
 
             /*----------------------------*/
@@ -520,8 +559,13 @@ function Player(
             /*----------------------------*/
 
             /*Двигаем нашего игрока по X и Y.*/
-            this.x += this.speedX;
-            this.y += this.speedY;
+            this.y += this.currentSpeedY;
+        };
+    };
+
+    this.checkIfPlayerIsInAPit = function () {
+        if (players.playerOne.y > canvas.height) {
+            players.playerOne.isActive = false;
         };
     };
 
@@ -559,16 +603,24 @@ function Player(
     this.draw = function () {
         // this.drawPredictedWays();
 
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        img = new Image;
+        img.src = this.src;
+        ctx.drawImage(img, this.x, this.y)
+        // ctx.fillStyle = this.color;
+        // ctx.fillRect(this.x, this.y, this.width, this.height);
 
         // this.drawPlayerCoordinates();
     };
 };
 
 /*-------------------------------------------------------------------------------------------------------------*/
-const walls = [
-    new Wall(0, 550, 1200, 1000, helper.getRandomColor(), 1, 2),
+let walls = [
+    new Wall(
+        0, 550,
+        1200, 450,
+        helper.getRandomColor(), 1,
+        2
+    )
 ];
 
 function Wall(
@@ -621,4 +673,34 @@ function Wall(
 
 /*-------------------------------------------------------------------------------------------------------------*/
 
-game.tick();
+let audio = {
+    volume: 0.05,
+
+    generateLoseSound: function () {
+        return new Audio('./src/sounds/default-sounds/lose-sound-default.wav');
+    },
+
+    defaultBackgroundMusic: new Audio('./src/music/03WhatUNeed.mp3'),
+
+    isBackgroundMusicPaused: false,
+
+    playSound: function (sound) {
+        sound.volume = audio.volume;
+        sound.play();
+    },
+
+    pauseSound: function (sound) {
+        audio.defaultBackgroundMusic.currentTime = 0;
+
+        sound.volume = audio.volume;
+        sound.pause();
+    },
+
+    initiateBackgroudMusicLooping: function () {
+        audio.defaultBackgroundMusic.loop = true;
+    }
+};
+
+audio.initiateBackgroudMusicLooping();
+
+/*-------------------------------------------------------------------------------------------------------------*/

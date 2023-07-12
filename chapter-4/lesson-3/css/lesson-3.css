@@ -6,7 +6,7 @@
 /*-------------------------------------------------------------------------------------------------------------*/
 
 .container {
-    margin-top: 20px;    
+    margin-top: 15px;    
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -15,4 +15,17 @@
 
 .canvas-one {
     border: 1px solid red;
+}
+
+.buttons-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.play-button, .reset-button {
+    margin-top: 6px;
+    margin-left: 15px;
+    height: 50px;
+    width: 300px;
+    font-size: 34px;
 }
