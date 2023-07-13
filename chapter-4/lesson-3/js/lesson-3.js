@@ -66,6 +66,18 @@ const ui = {
     pressResetButton: function () {
         game.reset();
         game.tick();
+    },
+
+    pressSoundButton: function () {
+        if (document.getElementsByClassName('sound-off-on-button')[0].innerHTML === '🔊') {
+            document.getElementsByClassName('sound-off-on-button')[0].innerHTML = '🔇'
+            audio.defaultBackgroundMusic.muted = true;
+            audio.generateLoseSound().muted = true;
+        } else {
+            document.getElementsByClassName('sound-off-on-button')[0].innerHTML = '🔊'
+            audio.defaultBackgroundMusic.muted = false;
+            audio.generateLoseSound().muted = false;
+        };
     }
 };
 
@@ -74,6 +86,7 @@ const ui = {
 const game = {
     tickTimeout: null,
     tickRate: 1000 / 60,
+    ticks: 0,
     worldSpeed: 16, // Скорость прокрутки мира.
     maxWorldSpeed: 100,
     highestFloor: canvas.height / 2, /*Максимально возможная высота какого-либо тайла.*/
@@ -111,11 +124,12 @@ const game = {
 
         game.autoScroll = true;
         game.worldSpeed = 16;
+        game.ticks = 0;
         game.tilesPassed = 0;
         game.distanceTravelled = 0;
         game.tempWallID = 2;
 
-        players.playerOne.isActive = true;        
+        players.playerOne.isActive = true;
         players.playerOne.currentSpeedX = 0;
         players.playerOne.currentSpeedY = 0;
         players.playerOne.x = 300;
@@ -131,7 +145,23 @@ const game = {
         ];
     },
 
+    generateBackground: function () {
+        let tempBackground = new Background('./src/images/background-two.png', backgrounds[backgrounds.length - 1].x + 800, 115);
+        backgrounds.push(tempBackground);
+    },
+
     prepareDataForNextTick: function () {
+        if (this.ticks % 600 === 0) {
+            this.generateBackground();
+            console.log(backgrounds);
+        };
+
+        for (let i = 0; i < backgrounds.length; i++) {
+            if (backgrounds[i].x + 800 < 0) {
+                backgrounds.splice(i, 1);
+            };
+        };
+
         players.playerOne.checkIfPlayerIsInAPit();
         game.cleanOldTiles();
         game.addFutureWalls(
@@ -144,7 +174,9 @@ const game = {
         players.playerOne.move();
 
         if (!players.playerOne.isActive) { // Если игрок не активный, то останавливаем прокрутку мира.
-            audio.playSound(audio.generateLoseSound());
+            if (document.getElementsByClassName('sound-off-on-button')[0].innerHTML === '🔊') {
+                audio.playSound(audio.generateLoseSound());
+            };
             audio.pauseSound(audio.defaultBackgroundMusic);
             game.stopWorld();
         };
@@ -153,9 +185,14 @@ const game = {
             for (let i = 0; i < walls.length; i++) {
                 walls[i].move(game.worldSpeed);
             };
+
+            for (let j = 0; j < backgrounds.length; j++) {
+                backgrounds[j].move(1);
+            };
         };
 
         this.calculateDistanceTravelled();
+        this.ticks++;
     },
 
     addFutureWalls: function (
@@ -235,8 +272,12 @@ const game = {
     },
 
     renderPreparedDataForNextTick: function () {
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = '#00a8f3';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < backgrounds.length; i++) {
+            backgrounds[i].drawBackground();
+        };
 
         for (let i = 0; i < walls.length; i++) {
             walls[i].draw();
@@ -249,6 +290,15 @@ const game = {
         ctx.fillText('Скорость: ' + game.worldSpeed, 10, 40); /*Выводим текст о текущей скорости прокрутки мира.*/
         ctx.fillText('Пройденое расстояние: ' + game.distanceTravelled, 10, 80); /*Выводим текст о том, какое расстояние было пройдено.*/
         ctx.fillText('Пройдено тайлов: ' + game.tilesPassed, 10, 120); /*Выводим текст о том, какое расстояние было пройдено.*/
+
+        ctx.strokeStyle = 'red';
+        ctx.fillStyle = players.playerOne.color;
+        ctx.strokeRect(550, 20, players.playerOne.maxJumpedDistance, 50);
+        if (players.playerOne.currentAccelerationY !== 0) {
+            ctx.fillRect(551, 21, players.playerOne.currentJumpedDistance, 48);
+        } else {
+            ctx.fillRect(551, 21, players.playerOne.maxJumpedDistance, 48);
+        };
     },
 };
 
@@ -304,10 +354,10 @@ function Player(
     this.currentSpeedX = 0;
     this.currentSpeedY = 0;
     this.maxSpeedX = 10;
-    this.maxSpeedY = 40;
-    this.currentAccelerationY = 15;
-    this.accelerationY = 24;
-    this.gravity = 3;
+    this.maxSpeedY = 26;
+    this.currentAccelerationY = 20;
+    this.accelerationY = 20;
+    this.gravity = 2;
     this.accelerationX = 1;
     this.friction = 0.6; // [0; 1] трение, используется как множитель скорости для плавного торможения.
     this.color = 'orange';
@@ -316,7 +366,7 @@ function Player(
 
     this.isPlayerOnTheFloor = false;
     this.currentJumpedDistance = 0;
-    this.maxJumpedDistance = 300;
+    this.maxJumpedDistance = 640;
 
     this.predictedHorizontalWayToTheRight = null;
     this.predictedHorizontalWayToTheLeft = null;
@@ -493,7 +543,12 @@ function Player(
         let closestCollisionUp = helper.findTheSmallestElementInArrayOfNumbers(potentialCollisionsUp);
 
         if (game.worldSpeed > 0 && closestCollisionRight) { // Если игрок движется вправо и на его пути потенциально есть препятствия,
-            game.worldSpeed = closestCollisionRight; // то в следующий тик его скорость равна расстоянию до самого ближайшего из этих препятствий.
+            //game.worldSpeed = closestCollisionRight; // то в следующий тик его скорость равна расстоянию до самого ближайшего из этих препятствий.
+
+            /*то сдвигаем все стенки на расстояние этой коллизии, чтобы они перескачили через игрока.*/
+            for (let i = 0; i < walls.length; i++) {
+                walls[i].x -= closestCollisionRight;
+            };
         };
 
         if (this.currentSpeedX < 0 && closestCollisionLeft) { // Если игрок движется влево и на его пути потенциально есть препятствия,
@@ -514,25 +569,25 @@ function Player(
             /*Обработка скоростей по Y.*/
             if (controls.isUpKeyPressed) { // Если нажато вверх,
                 this.currentSpeedY -= this.currentAccelerationY; // то значит уменьшаем скорость по Y, чтобы двигать игрока вверх.
-                this.isPlayerOnTheFloor = false;
             };
 
             /*Применяем гравитацию.*/
             this.currentSpeedY += this.gravity; // Каждый тик увеличиваем скорость по Y, чтобы при применении этой скорости к игроку двигать его вниз.
 
-            if (!this.isPlayerOnTheFloor && this.currentSpeedY < 0) {
+            if (this.currentAccelerationY !== 0 && this.currentSpeedY < 0) {
                 this.currentJumpedDistance += (this.accelerationY - this.gravity);
-            };
+                this.isPlayerOnTheFloor = false;
 
-            if (this.currentJumpedDistance >= this.maxJumpedDistance) {
-                this.currentAccelerationY = 0;
+                if (this.currentJumpedDistance >= this.maxJumpedDistance) {
+                    this.currentAccelerationY = 0;
+                    this.currentJumpedDistance = 0;
+                    this.color = 'red';
+                };
             };
 
             if (this.isPlayerOnTheFloor) {
+                this.color = 'orange';
                 this.currentJumpedDistance = 0;
-            };
-
-            if (this.isPlayerOnTheFloor) {
                 this.currentAccelerationY = this.accelerationY;
             };
 
@@ -606,14 +661,13 @@ function Player(
         img = new Image;
         img.src = this.src;
         ctx.drawImage(img, this.x, this.y)
-        // ctx.fillStyle = this.color;
-        // ctx.fillRect(this.x, this.y, this.width, this.height);
 
         // this.drawPlayerCoordinates();
     };
 };
 
 /*-------------------------------------------------------------------------------------------------------------*/
+
 let walls = [
     new Wall(
         0, 550,
@@ -668,6 +722,30 @@ function Wall(
 
         // this.drawWallsCoordinates();
         this.drawWallsID();
+    };
+};
+
+/*-------------------------------------------------------------------------------------------------------------*/
+
+let backgrounds = [
+    new Background('./src/images/background-one.png', 0, 115),
+    new Background('./src/images/background-two.png', 800, 115),
+    new Background('./src/images/background-two.png', 1600, 115)
+];
+
+function Background(src, x, y) {
+    this.src = src;
+    this.x = x;
+    this.y = y;
+
+    this.move = function (speedX) {
+        this.x -= speedX;
+    };
+
+    this.drawBackground = function () {
+        let firstBackground = new Image();
+        firstBackground.src = this.src;
+        ctx.drawImage(firstBackground, this.x, this.y);
     };
 };
 

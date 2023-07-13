@@ -22,10 +22,10 @@
     flex-direction: row;
 }
 
-.play-button, .reset-button {
+.play-button, .reset-button, .sound-off-on-button {
     margin-top: 6px;
     margin-left: 15px;
     height: 50px;
-    width: 300px;
-    font-size: 34px;
+    width: 250px;
+    font-size: 33px;
 }
