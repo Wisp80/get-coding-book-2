@@ -15,21 +15,21 @@ const player = {
     },
 
     processControls: function () {
-        if (game.controls.right) {
+        if (controls.isRightKeyDown) {
             this.character.speed = 5;
         };
 
-        if (game.controls.left) {
+        if (controls.isLeftKeyDown) {
             this.character.speed = -5;
         };
 
-        if (!game.controls.left && !game.controls.right) {
+        if (!controls.isLeftKeyDown && !controls.isRightKeyDown) {
             this.character.speed = 0;
         };
 
-        if (game.controls.up && this.character.standingOnAPlatform()) {
+        if (controls.isUpKeyDown && this.character.standingOnAPlatform()) {
             this.character.downwardForce = -8;
-            game.sounds.jump();
+            audio.jump();
         };
     },
 
@@ -58,7 +58,7 @@ function character(x, y, width, height, runningSprite, reverseSprite) {
         if (this.isJumping()) {
             this.jumpHeight += (this.downwardForce * -1);
 
-            if (this.jumpHeight >= this.height * 6) {
+            if (this.jumpHeight >= this.height * 12) {
                 this.downwardForce = world.gravity;
                 this.jumpHeight = 0;
             };

@@ -1,82 +1,33 @@
 const game = {
-    timer: null,
-
+    setTimeoutID: null,
     finished: false,
 
-    controls: {
-        left: false,
-        right: false,
-        up: false,
-        down: false,
-
-        mapping: {
-            65: 'left',
-            68: 'right',
-            87: 'up',
-            83: 'down'
-        },
-
-        buttonPress: function (keyInfo) {
-            this[this.mapping[keyInfo.keyCode]] = true;
-        },
-
-        buttonRelease: function (keyInfo) {
-            this[this.mapping[keyInfo.keyCode]] = false;
-        },
-
-        connect: function () {
-            window.addEventListener('keydown', function (keyInfo) {
-                game.controls.buttonPress(event);
-            }, false);
-
-            window.addEventListener('keyup', function (keyInfo) {
-                game.controls.buttonRelease(event);
-            }, false);
-        }
+    tick: function () {
+        window.clearTimeout(this.setTimeoutID);
+        if (this.finished) { return };
+        this.prepareDataForNextTick();
+        this.renderPreparedDataForNextTick();
+        this.setTimeoutID = window.setTimeout('game.tick()', 1000 / 60);
     },
 
-    sounds: {
-        enabled: true,
-
-        jump: function () {
-            this.play('./src/sounds/meow.wav');
-        },
-
-        backgroundMusic: function () {
-            this.play('./src/sounds/background.mp3');
-        },
-
-        play: function (filename) {
-            if (this.enabled) {
-                new Audio(filename).play();
-            };
-        }
-    },
-
-    loop: function () {
-        if (this.finished) {
-            return;
-        };
-
+    prepareDataForNextTick: function () {
         world.tick();
         player.tick();
+    },
+
+    renderPreparedDataForNextTick: function () {
         world.draw();
         player.draw();
-
-        this.timer = window.setTimeout('game.loop()', 1000 / 60);
     },
 
     start: function () {
-        this.controls.connect();
-        this.sounds.backgroundMusic();
-        this.loop();
+        // audio.backgroundMusic();
+        this.tick();
     },
 
     stop: function (reason) {
         this.finished = true;
-        window.clearTimeout(this.timer);
+        window.clearTimeout(this.setTimeoutID);
         alert(reason === 'win' ? 'You won!' : 'You lost!');
     }
 };
-
-game.start();
