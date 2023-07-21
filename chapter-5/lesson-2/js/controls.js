@@ -12,7 +12,6 @@ const controls = {
     },
 
     buttonPress: function (event) {
-        console.log(event);
         this[this.mapping[event.keyCode]] = true;
     },
 
