@@ -26,13 +26,13 @@ const world = {
 
     getYOfClosestSolidSurfaceBelowPlayer: function (x, y) {
         for (let tempY = y; tempY <= world.screenHeight; tempY++) {
-            if (this.isSolidSurface(x, tempY)) { return tempY };
+            if (this.findIfPixelIsSolidSurface(x, tempY)) { return tempY };
         };
 
         return 0;
     },
 
-    isSolidSurface: function (x, y) {
+    findIfPixelIsSolidSurface: function (x, y) {
         return this.getPixelType(x, y) === '#';
     },
 
@@ -51,7 +51,7 @@ const world = {
     prepareWorldData: function () {
         if (!this.levelImage) { this.loadLevelImage() };
         if (!this.collisionMapCanvas2DContext) { this.loadCollisionMapCanvas2DContext() };
-        this.distanceTravelledFromSpawnPoint += player.character.speed;
+        this.distanceTravelledFromSpawnPoint += player.character.currentSpeedX;
     },
 
     findXOfBeginningOfLevelEnd: function () {
