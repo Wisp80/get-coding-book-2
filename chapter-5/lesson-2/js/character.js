@@ -4,6 +4,7 @@ function Character(x, y, width, height, maxJumpHeight, runningSprite, reverseSpr
     this.height = height;
     this.width = width;
     this.currentSpeedX = 0;
+    this.currentDirectionX = 'right';
     this.downwardForce = 0;
     this.currentJumpHeight = 0;
     this.maxJumpHeight = maxJumpHeight;
@@ -15,6 +16,7 @@ function Character(x, y, width, height, maxJumpHeight, runningSprite, reverseSpr
     this.prepareCharacterData = function () {
         this.applyGravity();
         this.applyMovement();
+        this.defineDirectionX();
     };
 
     this.applyGravity = function () {
@@ -42,15 +44,12 @@ function Character(x, y, width, height, maxJumpHeight, runningSprite, reverseSpr
 
         /*Не работает если платформа перед котом короче по высоте его самого.*/
         let predictedLeadingEdgeX = this.findLeadingEdgeXOfCharacter() + this.currentSpeedX;
-        let isCharacterWalkingIntoSurface = world.findIfPixelIsSolidSurface(predictedLeadingEdgeX, this.y);
+        let isCharacterWalkingIntoSurface = world.findIfPixelIsSolidSurface(predictedLeadingEdgeX, nextY);
 
         if (this.findIfCharacterIsMovingX() && isCharacterWalkingIntoSurface) {
             nextX = this.x;
             this.currentSpeedX = 0;
         };
-
-        // let isTopLeadingAngleSolid = world.findIfPixelIsSolidSurface(this.findLeadingEdgeXOfCharacter(), this.y);
-        // let isTopTrailingAngleSolid = world.findIfPixelIsSolidSurface(this.findTrailingEdgeXOfCharacter(), this.y);
 
         /*Не работает если платформа над котом короче по ширине его самого.*/
         let isPredictedTopLeadingAngleSolid = world.findIfPixelIsSolidSurface(this.findLeadingEdgeXOfCharacter() + this.currentSpeedX, nextY);
@@ -65,40 +64,18 @@ function Character(x, y, width, height, maxJumpHeight, runningSprite, reverseSpr
         this.y = nextY;
     };
 
-    this.findIfCharacterIsJumping = function () {
-        return this.downwardForce < 0;
-    };
-
-    this.isFalling = function () {
-        return this.downwardForce > 0;
-    };
-
-    this.findIfCharacterIsMovingX = function () {
-        return this.currentSpeedX !== 0;
-    };
+    this.findIfCharacterIsJumping = function () { return this.downwardForce < 0 };
+    this.isFalling = function () { return this.downwardForce > 0 };
+    this.findIfCharacterIsMovingX = function () { return this.currentSpeedX !== 0 };
 
     this.findLeadingEdgeXOfCharacter = function () {
-        if (this.currentSpeedX < 0) {
-            this.leadingEdgeX = this.x;
-            return this.leadingEdgeX;
-        } else if (this.currentSpeedX > 0) {
-            this.leadingEdgeX = this.x + this.width;
-            return this.leadingEdgeX;
-        } else {
-            return this.leadingEdgeX;
-        };
+        if (this.currentSpeedX < 0) { return this.leadingEdgeX = this.x }
+        else { return this.leadingEdgeX = this.x + this.width };
     };
 
     this.findTrailingEdgeXOfCharacter = function () {
-        if (this.currentSpeedX < 0) {
-            this.trailingEdgeX = this.x + this.width;
-            return this.trailingEdgeX;
-        } else if (this.currentSpeedX > 0) {
-            this.trailingEdgeX = this.x;
-            return this.trailingEdgeX;
-        } else {
-            return this.trailingEdgeX;
-        };
+        if (this.currentSpeedX < 0) { return this.trailingEdgeX = this.x + this.width }
+        else { return this.trailingEdgeX = this.x };
     };
 
     this.findIfPlayerIsStandingOnAPlatform = function () {
@@ -106,23 +83,48 @@ function Character(x, y, width, height, maxJumpHeight, runningSprite, reverseSpr
             world.findIfPixelIsSolidSurface(this.findTrailingEdgeXOfCharacter(), this.y + this.height + 1);
     };
 
-    this.draw = function () {
-        // if (!this.runningSprite) { return };
+    this.defineDirectionX = function () {
+        if (this.currentSpeedX > 0) {
+            this.currentDirectionX = 'right';
+        } else if (this.currentSpeedX < 0) {
+            this.currentDirectionX = 'left';
+        };
+    };
 
+    this.draw = function () {        
         let drawAtX = this.x - world.distanceTravelledFromSpawnPoint;
+
+        /*Проверяем не прошел ли игрок дальше точки спавна в левую сторону, и если так, то двигаем
+        изображения персонажа.*/
         drawAtX = drawAtX > this.x ? this.x : drawAtX;
 
+        /*Проверяем не находится ли игрок в конце уровня в правой стороне, и если так, то двигаем
+        изображения персонажа.*/
         if (world.findIfPlayerIsAtLevelEnd()) {
-            drawAtX = (world.screenWidth - (world.levelImage.width - world.distanceTravelledFromSpawnPoint - (this.x - world.distanceTravelledFromSpawnPoint)));
+            drawAtX = world.screenWidth - (world.levelImage.width - world.distanceTravelledFromSpawnPoint - (this.x - world.distanceTravelledFromSpawnPoint));
         };
 
-        let sprite = this.currentSpeedX < 0 ? this.runningSpriteReversed : this.runningSprite;
+        let sprite = null;
+        if (this.currentDirectionX === 'right') {
+            sprite = this.runningSprite;
+        } else if (this.currentDirectionX === 'left') {
+            sprite = this.runningSpriteReversed;
+        };
 
         if (this.findIfCharacterIsJumping() || this.isFalling()) {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(drawAtX, this.y, this.width, this.height);
+
             sprite.drawFrame(4, drawAtX, this.y, this.height, this.width);
         } else if (this.findIfCharacterIsMovingX()) {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(drawAtX, this.y, this.width, this.height);
+
             sprite.draw(game.ticks, drawAtX, this.y, this.height, this.width);
         } else {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(drawAtX, this.y, this.width, this.height);
+            
             sprite.drawFrame(1, drawAtX, this.y, this.height, this.width);
         };
     };

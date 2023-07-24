@@ -15,13 +15,13 @@ const game = {
         this.ticks++;
 
         if (!world.levelImage) {
-            enemies.push(new enemy(500, 100, 300));
-            enemies.push(new enemy(2000, 100, 300));
-            enemies.push(new enemy(3700, 100, 300));
-            enemies.push(new enemy(4000, 100, 300));
-            enemies.push(new enemy(5600, 100, 300));
-            enemies.push(new enemy(6500, 100, 300));
-            enemies.push(new enemy(7600, 100, 300));
+            // enemies.push(new enemy(500, 100, 300));
+            // enemies.push(new enemy(2000, 100, 300));
+            // enemies.push(new enemy(3700, 100, 300));
+            // enemies.push(new enemy(4000, 100, 300));
+            // enemies.push(new enemy(5600, 100, 300));
+            // enemies.push(new enemy(6500, 100, 300));
+            // enemies.push(new enemy(7600, 100, 300));
         };
 
         activateEnemies();

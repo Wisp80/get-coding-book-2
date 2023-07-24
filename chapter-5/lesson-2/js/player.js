@@ -1,5 +1,10 @@
 const player = {
-    character: new Character(160, 390, 25, 25, 250, new animation('./src/cat/cat', 5), new animation('./src/cat/backwards/cat.backwards', 5)),
+    character: new Character(
+        160, 390,
+        25, 25,
+        150,
+        new animation('./src/cat/cat', 5), new animation('./src/cat/backwards/cat.backwards', 5)
+    ),
 
     tick: function () {
         let currentLocation = world.getPixelType(this.character.findLeadingEdgeXOfCharacter(), this.character.y);

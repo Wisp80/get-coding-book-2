@@ -9,7 +9,7 @@ const world = {
 
     loadLevelImage: function () {
         this.levelImage = new Image();
-        this.levelImage.src = './src/level/level.png';
+        this.levelImage.src = './src/level/map.png';
     },
 
     loadCollisionMapCanvas2DContext: function () {
