@@ -1,17 +1,21 @@
 const audio = {
     enabled: true,
+    volume: 0.4,
+    backgroundMusic: new Audio('./src/sounds/background.mp3'),
+    jumpSound: new Audio('./src/sounds/meow.wav'),
 
-    jump: function () {
-        this.play('./src/sounds/meow.wav');
+    initiateBackgroudMusicLooping: function () { audio.backgroundMusic.loop = true },
+
+    playSound: function (sound) {
+        sound.volume = audio.volume;
+        sound.play();
     },
 
-    backgroundMusic: function () {
-        this.play('./src/sounds/background.mp3');
-    },
-
-    play: function (filename) {
-        if (this.enabled) {
-            new Audio(filename).play();
-        };
+    pauseSound: function (sound) {
+        audio.backgroundMusic.currentTime = 0;
+        sound.volume = audio.volume;
+        sound.pause();
     }
 };
+
+audio.initiateBackgroudMusicLooping();

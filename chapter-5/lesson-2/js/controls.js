@@ -11,13 +11,8 @@ const controls = {
         83: 'isDownKeyDown'
     },
 
-    buttonPress: function (event) {
-        this[this.mapping[event.keyCode]] = true;
-    },
-
-    buttonRelease: function (event) {
-        this[this.mapping[event.keyCode]] = false;
-    },
+    buttonPress: function (event) { this[this.mapping[event.keyCode]] = true },
+    buttonRelease: function (event) { this[this.mapping[event.keyCode]] = false },
 
     initializePlayersControlsListening: function () {
         window.addEventListener('keydown', function (event) { controls.buttonPress(event) }, false);

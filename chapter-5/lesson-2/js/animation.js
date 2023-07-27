@@ -1,6 +1,5 @@
-function animation(filename, frameCount) {
+function Animation(filename, frameCount) {
     this.frames = [];
-
     this.currentFrameId = 1;
 
     for (let frameId = 1; frameId <= frameCount; frameId++) {
@@ -9,16 +8,16 @@ function animation(filename, frameCount) {
         this.frames[frameId] = frame;
     };
 
-    this.draw = function (ticks, x, y, height, width) {
+    this.drawFrame = function (frameNumber, x, y, width, height) {
+        ctx.drawImage(this.frames[frameNumber], x, y, width, height);
+    };
+
+    this.drawAnimation = function (ticks, x, y, width, height) {
         if (ticks % 5 === 0) {
             this.currentFrameId++;
         };
 
         this.currentFrameId = this.currentFrameId >= this.frames.length ? 1 : this.currentFrameId;
-        this.drawFrame(this.currentFrameId, x, y, height, width);
-    };
-
-    this.drawFrame = function (frameNumber, x, y, height, width) {
-        ctx.drawImage(this.frames[frameNumber], x, y, width, height);
+        this.drawFrame(this.currentFrameId, x, y, width, height);
     };
 };

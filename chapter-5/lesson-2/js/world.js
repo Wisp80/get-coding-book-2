@@ -73,6 +73,6 @@ const world = {
         изображение уровня.*/
         drawAtX = this.findIfPlayerIsAtLevelEnd() ? this.findXOfBeginningOfLevelEnd() * -1 : drawAtX;
 
-        ctx.drawImage(this.levelImage, drawAtX, 0);        
+        if (!game.finished) { ctx.drawImage(this.levelImage, drawAtX, 0) };
     }
 };

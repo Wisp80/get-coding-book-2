@@ -1,4 +1,4 @@
-function Character(x, y, width, height, maxJumpHeight, runningSprite, reverseSprite) {
+function Character(x, y, width, height, maxJumpHeight, runningSpriteRight, runningSpriteLeft) {
     this.x = x;
     this.y = y;
     this.height = height;
@@ -8,8 +8,8 @@ function Character(x, y, width, height, maxJumpHeight, runningSprite, reverseSpr
     this.downwardForce = 0;
     this.currentJumpHeight = 0;
     this.maxJumpHeight = maxJumpHeight;
-    this.runningSprite = runningSprite;
-    this.runningSpriteReversed = reverseSprite;
+    this.runningSpriteRight = runningSpriteRight;
+    this.runningSpriteLeft = runningSpriteLeft;
     this.leadingEdgeX = 0;
     this.trailingEdgeX = 0;
 
@@ -91,7 +91,12 @@ function Character(x, y, width, height, maxJumpHeight, runningSprite, reverseSpr
         };
     };
 
-    this.draw = function () {        
+    this.drawHitbox = function (drawAtX) {
+        ctx.fillStyle = 'rgb(234, 0, 255)';
+        ctx.fillRect(drawAtX, this.y, this.width, this.height);
+    };
+
+    this.draw = function () {
         let drawAtX = this.x - world.distanceTravelledFromSpawnPoint;
 
         /*Проверяем не прошел ли игрок дальше точки спавна в левую сторону, и если так, то двигаем
@@ -105,27 +110,23 @@ function Character(x, y, width, height, maxJumpHeight, runningSprite, reverseSpr
         };
 
         let sprite = null;
+
         if (this.currentDirectionX === 'right') {
-            sprite = this.runningSprite;
+            sprite = this.runningSpriteRight;
         } else if (this.currentDirectionX === 'left') {
-            sprite = this.runningSpriteReversed;
+            sprite = this.runningSpriteLeft;
         };
 
-        if (this.findIfCharacterIsJumping() || this.isFalling()) {
-            ctx.fillStyle = 'red';
-            ctx.fillRect(drawAtX, this.y, this.width, this.height);
+        if (!game.finished) {
+            this.drawHitbox(drawAtX);
 
-            sprite.drawFrame(4, drawAtX, this.y, this.height, this.width);
-        } else if (this.findIfCharacterIsMovingX()) {
-            ctx.fillStyle = 'red';
-            ctx.fillRect(drawAtX, this.y, this.width, this.height);
-
-            sprite.draw(game.ticks, drawAtX, this.y, this.height, this.width);
-        } else {
-            ctx.fillStyle = 'red';
-            ctx.fillRect(drawAtX, this.y, this.width, this.height);
-            
-            sprite.drawFrame(1, drawAtX, this.y, this.height, this.width);
+            if (this.findIfCharacterIsJumping() || this.isFalling()) {
+                sprite.drawFrame(4, drawAtX, this.y, this.width, this.height);
+            } else if (this.findIfCharacterIsMovingX()) {
+                sprite.drawAnimation(game.ticks, drawAtX, this.y, this.width, this.height);
+            } else {
+                sprite.drawFrame(1, drawAtX, this.y, this.width, this.height);
+            };
         };
     };
 

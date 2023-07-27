@@ -13,36 +13,25 @@ const game = {
 
     prepareDataForNextTick: function () {
         this.ticks++;
-
-        if (!world.levelImage) {
-            // enemies.push(new enemy(500, 100, 300));
-            // enemies.push(new enemy(2000, 100, 300));
-            // enemies.push(new enemy(3700, 100, 300));
-            // enemies.push(new enemy(4000, 100, 300));
-            // enemies.push(new enemy(5600, 100, 300));
-            // enemies.push(new enemy(6500, 100, 300));
-            // enemies.push(new enemy(7600, 100, 300));
-        };
-
-        activateEnemies();
-
+        enemies.prepareEnemiesData();
         world.prepareWorldData();
-        player.tick();
+        player.preparePlayerData();
     },
 
     renderPreparedDataForNextTick: function () {
         world.draw();
-        for (let i = 0; i < enemies.length; i++) { enemies[i].draw() };
         player.draw();
+        for (let i = 0; i < enemies.enemiesList.length; i++) { enemies.enemiesList[i].draw() };
     },
 
     start: function () {
-        // audio.backgroundMusic();
+        audio.playSound(audio.backgroundMusic);
         this.tick();
     },
 
     stop: function (reason) {
         this.finished = true;
+        audio.pauseSound(audio.backgroundMusic);
         window.clearTimeout(this.setTimeoutID);
         alert(reason === 'win' ? 'You won!' : 'You lost!');
     }
