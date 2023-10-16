@@ -1,5 +1,5 @@
 let audio = {
-    volume: 0.05,
+    volume: 0.5,
 
     generateLoseSound: function () {
         return new Audio('./src/sounds/default-sounds/lose-sound-default.wav');

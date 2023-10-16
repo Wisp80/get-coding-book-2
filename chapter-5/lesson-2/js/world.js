@@ -9,12 +9,12 @@ const world = {
 
     loadLevelImage: function () {
         this.levelImage = new Image();
-        this.levelImage.src = './src/level/map.png';
+        this.levelImage.src = './src/level/level.png';
     },
 
     loadCollisionMapCanvas2DContext: function () {
         this.collisionMapImage = new Image();
-        this.collisionMapImage.src = './src/level/map.png';
+        this.collisionMapImage.src = collisionMapImageBase64;
         this.collisionMapImage.onload = function () {
             let hiddenCanvas = document.createElement('canvas');
             hiddenCanvas.setAttribute('width', this.width); // 8000
